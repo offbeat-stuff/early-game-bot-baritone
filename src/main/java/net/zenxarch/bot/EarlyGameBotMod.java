@@ -12,15 +12,20 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.CraftingScreen;
+import net.minecraft.command.argument.ItemStackArgumentType;
 import net.minecraft.data.server.RecipesProvider;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.predicate.item.ItemPredicate;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.recipe.book.RecipeBook;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import baritone.api.BaritoneAPI;
@@ -33,6 +38,7 @@ public class EarlyGameBotMod implements ClientModInitializer {
 	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LoggerFactory.getLogger("zenbot");
     boolean hasToCraft;
+	Item toCraft;
 	boolean waitForBaritone;
 	@Override
 	public void onInitializeClient() {
@@ -49,14 +55,14 @@ public class EarlyGameBotMod implements ClientModInitializer {
 			}
 			if(hasToCraft){
                 if(mc.currentScreen instanceof CraftingScreen){
-					if(mc.player.currentScreenHandler.getSlot(0).getStack().getItem().equals(Items.FURNACE)){
+					if(mc.player.currentScreenHandler.getSlot(0).getStack().getItem().equals(toCraft)){
 						mc.interactionManager.clickSlot(
 							mc.player.currentScreenHandler.syncId, 
 							0, 0, SlotActionType.QUICK_CRAFT, mc.player);
 					} else {
 					    RecipeManager rm = mc.getNetworkHandler().getRecipeManager();
 					    for(Recipe recipe: rm.values()){
-						    if(recipe.getOutput().getItem().equals(Items.FURNACE)){
+						    if(!recipe.getOutput().getItem().equals(toCraft)){
 							    continue;
 						    }
                             mc.interactionManager.clickRecipe(
@@ -72,12 +78,15 @@ public class EarlyGameBotMod implements ClientModInitializer {
 			}
 		});
 		ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("zcraft").then(
-			ClientCommandManager.argument("item",StringArgumentType.string()).executes(
+			ClientCommandManager.argument("item",StringArgumentType.string())).executes(
                 context -> {
 					// Obviously we are not in a crafting menu
 			        try {
 						IBaritone pb = BaritoneAPI.getProvider().getPrimaryBaritone();
 						pb.getGetToBlockProcess().getToBlock(Blocks.CRAFTING_TABLE);
+						String item = StringArgumentType.getString(context, "item");
+						toCraft = Registry.ITEM.get(new Identifier(item));
+						context.getSource().getPlayer().sendMessage(toCraft.getName(), true);;
 						waitForBaritone = true;
 					} catch (Exception e) {
 						//TODO: handle exception
@@ -85,7 +94,7 @@ public class EarlyGameBotMod implements ClientModInitializer {
                     return 0;
 				}
 			)
-		));
+		);
 		
 	}
 
