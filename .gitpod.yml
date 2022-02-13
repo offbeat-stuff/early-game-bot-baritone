@@ -8,4 +8,5 @@ vscode:
   extensions:
     - redhat.java
     - vscjava.vscode-java-debug
-
+    - dgileadi.java-decompiler
+    - vscjava.vscode-java-pack
