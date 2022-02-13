@@ -6,7 +6,9 @@ import org.slf4j.LoggerFactory;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import baritone.api.BaritoneAPI;
+import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
+import com.mojang.brigadier.arguments.StringArgumentType;
 
 @Environment(EnvType.CLIENT)
 public class EarlyGameBotMod implements ClientModInitializer {
@@ -21,6 +23,14 @@ public class EarlyGameBotMod implements ClientModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 		LOGGER.info("ZenBot loaded have fun botting.");
+		ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("zcraft").then(
+			ClientCommandManager.argument("item",StringArgumentType.string()).executes(
+                context -> {
+
+				}
+			)
+		));
+		
 	}
 
 	public static Logger getLogger() {
