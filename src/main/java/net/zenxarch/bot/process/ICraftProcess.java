@@ -27,6 +27,9 @@ public class ICraftProcess {
    *
    * */
   private int stage;
+  private int nextStage = -1;
+  private boolean stageCompleted = false;
+
   public ICraftProcess() {}
 
   public void activate(Item item) {
@@ -46,6 +49,53 @@ public class ICraftProcess {
     return null;
   }
 
+  void stage0(MinecraftClient mc) {
+    itemRecipe = findRecipe(mc);
+    if (itemRecipe == null) {
+      mc.player.sendMessage(Text.of("Uncraftable item\n"), false);
+      _isActive = false;
+      return;
+    }
+    baritone.getGetToBlockProcess().getToBlock(Blocks.CRAFTING_TABLE);
+    stageCompleted = true;
+  }
+
+  void stage1(MinecraftClient mc) {
+    if (!baritone.getGetToBlockProcess().isActive()) {
+      stageCompleted = true;
+      waitTicks = 2;
+    }
+  }
+
+  void stage2(MinecraftClient mc) {
+    if (mc.currentScreen instanceof CraftingScreen) {
+      RecipeManager rm = mc.getNetworkHandler().getRecipeManager();
+      for (Recipe recipe : rm.values()) {
+        if (recipe.getOutput().getItem().equals(itemToCraft)) {
+          int syncId = mc.player.currentScreenHandler.syncId;
+          mc.interactionManager.clickRecipe(syncId, recipe, false);
+          break;
+        }
+      }
+    }
+    waitTicks = 3;
+    stageCompleted = true;
+  }
+
+  void stage3(MinecraftClient mc) {
+    if (mc.currentScreen instanceof CraftingScreen) {
+      if (mc.player.currentScreenHandler.getSlot(0)
+              .getStack()
+              .getItem() == itemToCraft) {
+        int syncId = mc.player.currentScreenHandler.syncId;
+        mc.interactionManager.clickSlot(
+            syncId, 0, 0, SlotActionType.QUICK_MOVE, mc.player);
+      }
+    }
+    stageCompleted = true;
+    _isActive = false;
+  }
+
   public void tick(MinecraftClient mc) {
     if (!_isActive) {
       return;
@@ -54,55 +104,22 @@ public class ICraftProcess {
       waitTicks--;
       return;
     }
-    if (stage >= 4) {
-      stage = 0;
-    }
-    boolean stageCompleted = false;
+    stageCompleted = false;
     switch (stage) {
     case 0:
-      itemRecipe = findRecipe(mc);
-      if (itemRecipe == null) {
-        mc.player.sendMessage(Text.of("Uncraftable item\n"), false);
-        _isActive = false;
-        break;
-      }
-      baritone.getGetToBlockProcess().getToBlock(
-          Blocks.CRAFTING_TABLE);
-      stageCompleted = true;
+      stage0(mc);
       break;
     case 1:
-      if (!baritone.getGetToBlockProcess().isActive()) {
-        stageCompleted = true;
-        waitTicks = 2;
-      }
+      stage1(mc);
       break;
     case 2:
-      if (mc.currentScreen instanceof CraftingScreen) {
-        RecipeManager rm = mc.getNetworkHandler().getRecipeManager();
-        for (Recipe recipe : rm.values()) {
-          if (recipe.getOutput().getItem().equals(itemToCraft)) {
-            int syncId = mc.player.currentScreenHandler.syncId;
-            mc.interactionManager.clickRecipe(syncId, recipe, false);
-            break;
-          }
-        }
-      }
-      waitTicks = 3;
-      stageCompleted = true;
+      stage2(mc);
       break;
     case 3:
-      if (mc.currentScreen instanceof CraftingScreen) {
-        if (mc.player.currentScreenHandler.getSlot(0)
-                .getStack()
-                .getItem() == itemToCraft) {
-          int syncId = mc.player.currentScreenHandler.syncId;
-          mc.interactionManager.clickSlot(
-              syncId, 0, 0, SlotActionType.QUICK_MOVE, mc.player);
-        }
-      }
-      stageCompleted = true;
-      _isActive = false;
+      stage3(mc);
       break;
+    default:
+      stage = 0;
     }
     if (stageCompleted) {
       stage++;
