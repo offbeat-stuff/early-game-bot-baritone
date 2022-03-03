@@ -23,8 +23,15 @@ public final class KillAura {
     this.targets = new ArrayList<LivingEntity>(0);
   }
 
+  public Double opD(LivingEntity e) {
+    var xd = p.getX() - e.getX();
+    var yd = p.getY() - e.getY();
+    var zd = p.getZ() - e.getZ();
+    return xd * xd + yd * yd + zd * zd;
+  }
+
   private boolean isGood(LivingEntity e) {
-    if (p.distanceTo(e) > 5)
+    if (opD(e) > 25)
       return false;
     if (e instanceof PassiveEntity)
       return false;
@@ -36,6 +43,7 @@ public final class KillAura {
   }
 
   private void updateTargets() {
+    targets = new ArrayList<LivingEntity>(0);
     mc.world.getEntities().forEach(e -> {
       if (!(e instanceof LivingEntity) || e == null)
         return;
@@ -86,7 +94,7 @@ public final class KillAura {
       if (e instanceof CreeperEntity &&
           mc.player.getOffHandStack().getItem().equals(
               Items.SHIELD)) {
-        if (p.distanceTo(e) < 2) {
+        if (opD(e) < 4) {
           p.swingHand(Hand.OFF_HAND);
         } else {
           p.swingHand(Hand.MAIN_HAND);
@@ -111,8 +119,9 @@ public final class KillAura {
     return null;
   }
 
+  // TODO: remove recalc of distance
   private int sort(LivingEntity e1, LivingEntity e2) {
-    return Double.compare(p.distanceTo(e1), p.distanceTo(e2));
+    return Double.compare(opD(e1), opD(e2));
   }
 
   public KillAura getInstance() { return INSTANCE; }
