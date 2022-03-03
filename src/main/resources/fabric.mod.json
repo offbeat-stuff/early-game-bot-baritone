@@ -3,7 +3,7 @@
   "id": "zenbot",
   "version": "${version}",
 
-  "name": "Early Game Bot",
+  "name": "Zen Bot",
   "description": "Early Game bot that automates early game tasks",
   "authors": [
     "Me!"
@@ -16,11 +16,8 @@
 
   "environment": "client",
   "entrypoints": {
-    "client":["net.zenxarch.bot.EarlyGameBotMod"]
+    "client":["net.zenxarch.bot.ZenBot"]
   },
-  "mixins": [
-    "zenbot.mixins.json"
-  ],
 
   "depends": {
     "fabricloader": ">=0.12.12",
@@ -29,6 +26,5 @@
     "java": ">=17"
   },
   "suggests": {
-    "another-mod": "*"
   }
 }
