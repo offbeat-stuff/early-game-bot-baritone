@@ -4,9 +4,13 @@
 
 tasks:
   - init: ./gradlew build
+image:
+  file: .gitpod.Dockerfile
+github:
+  prebuilds:
+    master: true
 vscode:
   extensions:
     - redhat.java
     - vscjava.vscode-java-debug
-    - dgileadi.java-decompiler
     - vscjava.vscode-java-pack
