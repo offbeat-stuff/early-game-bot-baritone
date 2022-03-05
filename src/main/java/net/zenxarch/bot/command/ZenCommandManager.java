@@ -1,7 +1,6 @@
-package net.zenxarch.bot;
+package net.zenxarch.bot.command;
 
 import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
-import net.zenxarch.bot.command.*;
 
 public class ZenCommandManager {
   public static void registerCommands() {

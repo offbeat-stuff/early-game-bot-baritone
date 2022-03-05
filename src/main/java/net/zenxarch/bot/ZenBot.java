@@ -1,18 +1,19 @@
 package net.zenxarch.bot;
 
-import baritone.k;
 import java.util.ArrayList;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult.Type;
+import net.minecraft.entity.Entity;
+import net.minecraft.world.World;
+import net.zenxarch.bot.command.ZenCommandManager;
 import net.zenxarch.bot.task.MultiTask;
 import net.zenxarch.bot.task.Task;
+import net.zenxarch.bot.util.TargetUtil;
+import org.apache.http.impl.client.TargetAuthenticationStrategy;
 import org.apache.logging.log4j.*;
 
 @Environment(EnvType.CLIENT)
@@ -37,19 +38,36 @@ public class ZenBot implements ClientModInitializer {
     LOGGER.info("ZenBot loaded have fun botting.");
     ZenCommandManager.registerCommands();
     LOGGER.info("registered commands");
-    var k = new KillAura();
-    ClientTickEvents.END_CLIENT_TICK.register(mc -> {
-      if (mc.world == null)
-        return;
-      if (k.needsControl())
-        return;
-      TASKQUEUE.onTick();
-    });
-    ClientTickEvents.START_CLIENT_TICK.register(mc -> {
-      if (mc.world == null)
-        return;
-      k.onTick();
-    });
+    ClientEntityEvents.ENTITY_LOAD.register(
+        (e, w) -> handleEntityLoad(e, w));
+    ClientEntityEvents.ENTITY_UNLOAD.register(
+        (e, w) -> handleEntityUnload(e, w));
+    ClientTickEvents.START_CLIENT_TICK.register(
+        mc -> handleTickStart(mc));
+    ClientTickEvents.END_CLIENT_TICK.register(
+        mc -> handleTickEnd(mc));
+  }
+
+  private void handleTickStart(MinecraftClient mc) {
+    if (mc.world == null)
+      return;
+    KillAura.onTick();
+  }
+
+  private void handleTickEnd(MinecraftClient mc) {
+    if (mc.world == null)
+      return;
+    if (KillAura.needsControl())
+      return;
+    TASKQUEUE.onTick();
+  }
+
+  private void handleEntityLoad(Entity e, World w) {
+    TargetUtil.handleEntityLoad(e);
+  }
+
+  private void handleEntityUnload(Entity e, World w) {
+    TargetUtil.handleEntityUnload(e);
   }
 
   public Logger getLogger() { return LOGGER; }
