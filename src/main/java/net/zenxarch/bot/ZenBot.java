@@ -13,7 +13,6 @@ import net.zenxarch.bot.command.ZenCommandManager;
 import net.zenxarch.bot.task.MultiTask;
 import net.zenxarch.bot.task.Task;
 import net.zenxarch.bot.util.TargetUtil;
-import org.apache.http.impl.client.TargetAuthenticationStrategy;
 import org.apache.logging.log4j.*;
 
 @Environment(EnvType.CLIENT)

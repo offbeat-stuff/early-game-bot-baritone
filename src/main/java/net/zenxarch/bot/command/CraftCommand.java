@@ -7,7 +7,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.argument.ItemStackArgumentType;
 import net.minecraft.item.Item;
-import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeType;
 import net.zenxarch.bot.ZenBot;
 import net.zenxarch.bot.task.CraftTask;
