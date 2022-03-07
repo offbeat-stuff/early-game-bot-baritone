@@ -3,10 +3,9 @@ package net.zenxarch.bot;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.mob.EndermanEntity;
-import net.minecraft.entity.mob.PiglinEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.GolemEntity;
 import net.minecraft.entity.passive.TameableEntity;
@@ -24,15 +23,12 @@ public final class KillAura {
   private static ClientPlayerEntity p;
   private static final MinecraftClient mc =
       MinecraftClient.getInstance();
+  private static boolean wasBlocking;
 
   private static boolean isGood(LivingEntity e) {
     if (!e.isAlive() || e.isDead())
       return false;
     if (e instanceof AnimalEntity && e.isBaby())
-      return false;
-    if (e instanceof EndermanEntity eman && !eman.isAngryAt(p))
-      return false;
-    if (e instanceof PiglinEntity pig && !pig.isAngryAt(p))
       return false;
     if (e instanceof GolemEntity || e instanceof VillagerEntity ||
         e instanceof TameableEntity)
@@ -55,13 +51,17 @@ public final class KillAura {
     }
   }
 
-  public static boolean needsControl() { return target != null; }
+  public static boolean needsControl() {
+    if (target == null) {
+      unblockShield();
+      return false;
+    }
+    return true;
+  }
 
   public static void onTick() {
     p = mc.player;
-    if (p.isDead())
-      return;
-    if (p.getAttackCooldownProgress(0.0f) < 1.0f)
+    if (p == null || p.isDead() || p.isSpectator() || p.isSleeping())
       return;
     if (mc.currentScreen != null &&
         !(mc.currentScreen instanceof HandledScreen))
@@ -70,36 +70,48 @@ public final class KillAura {
     if (target == null)
       return;
     if (mc.currentScreen != null)
-      p.closeScreen();
-    var shouldCrit =
-        target.getHealth() > 4.0 &&
-        !(p.isSubmergedInWater() || p.isInLava() || p.isClimbing());
-    if (p.isOnGround() && shouldCrit &&
-        target.getY() >= p.getY() - 0.5) {
-      p.jump();
-      return;
-    }
-    if (shouldCrit && p.getVelocity().y > 0)
-      return;
-    if (ClientPlayerHelper.lookingAt() == target) {
-      handleTarget(target);
-    } else {
+      p.closeHandledScreen();
+    if (ClientPlayerHelper.lookingAt() != target) {
       ClientPlayerHelper.lookAt(target);
       ClientPlayerHelper.syncRotation();
     }
+    if (handleCrit())
+      attackTarget();
+    else
+      blockShield();
   }
 
-  private static void handleTarget(LivingEntity e) {
-    switchItem();
-    if (e instanceof CreeperEntity c && c.isIgnited() &&
-        mc.player.getOffHandStack().getItem().equals(Items.SHIELD)) {
-      mc.interactionManager.interactItem(mc.player, mc.world,
-                                         Hand.OFF_HAND);
-      mc.player.swingHand(Hand.OFF_HAND);
-      return;
+  private static boolean handleCrit() {
+    var canCrit =
+        !(p.isSubmergedInWater() || p.isClimbing() || p.isInLava());
+    if (canCrit) {
+      if (p.isOnGround()) {
+        p.jump();
+        return false;
+      } else if (p.getVelocity().y > 0)
+        return false;
     }
-    mc.interactionManager.attackEntity(mc.player, e);
-    mc.player.swingHand(Hand.OFF_HAND);
+    return p.getAttackCooldownProgress(0.0f) >= 1.0;
+  }
+
+  private static void attackTarget() {
+    switchItem();
+    mc.interactionManager.attackEntity(mc.player, target);
+    p.swingHand(Hand.MAIN_HAND);
+  }
+
+  private static void blockShield() {
+    if (!p.getOffHandStack().getItem().equals(Items.SHIELD))
+      return;
+    mc.options.keyUse.setPressed(true);
+    wasBlocking = true;
+  }
+
+  private static void unblockShield() {
+    if (!wasBlocking)
+      return;
+    mc.options.keyUse.setPressed(false);
+    wasBlocking = false;
   }
 
   private static void switchItem() {
@@ -108,31 +120,9 @@ public final class KillAura {
         Items.DIAMOND_SWORD, Items.IRON_AXE,        Items.IRON_SWORD,
         Items.STONE_AXE,     Items.STONE_SWORD,     Items.WOODEN_AXE,
         Items.WOODEN_SWORD};
-    var inv = p.getInventory();
-    int j = 0;
-    boolean found = false;
     for (int i = 0; i < items.length; i++) {
-      for (j = 0; j < inv.main.size(); j++) {
-        if (p.getInventory().getStack(j).getItem() == items[i]) {
-          found = true;
-          break;
-        }
-      }
-      if (found)
-        break;
-    }
-    if (!found)
-      return;
-    if (j >= 0 && j < 9) {
-      inv.selectedSlot = j;
-      return;
-    }
-    for (int i = 0; i < 9; i++) {
-      if (inv.main.get(i).isEmpty()) {
-        inv.selectedSlot = i;
-        mc.interactionManager.pickFromInventory(j);
+      if (ClientPlayerHelper.pickItem(items[i]))
         return;
-      }
     }
   }
 }

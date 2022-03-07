@@ -3,7 +3,10 @@ package net.zenxarch.bot.util;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.Item;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+// import
+// net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult.Type;
 
@@ -41,5 +44,44 @@ public class ClientPlayerHelper {
     p.networkHandler.sendPacket(
         new PlayerMoveC2SPacket.LookAndOnGround(
             p.getYaw(), p.getPitch(), p.isOnGround()));
+  }
+
+  public static void setSelectedSlot(int i) {
+    var p = mc.player;
+    p.getInventory().selectedSlot = i % 9;
+    // p.networkHandler.sendPacket(new
+    // UpdateSelectedSlotC2SPacket(p.getInventory().selectedSlot));
+  }
+
+  public static void pickItemSlot(int slot) {
+    var inv = mc.player.getInventory();
+    if (slot >= inv.main.size() || slot < 0)
+      return;
+    if (slot < 9) {
+      setSelectedSlot(slot);
+      return;
+    }
+    int swappable = inv.getSwappableHotbarSlot();
+    if (swappable != inv.selectedSlot)
+      setSelectedSlot(swappable);
+    mc.interactionManager.pickFromInventory(slot);
+  }
+
+  public static int findInInventory(Item item) {
+    var inv = mc.player.getInventory();
+    for (int i = 0; i < inv.main.size(); i++) {
+      if (inv.main.get(i).getItem().equals(item)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  public static boolean pickItem(Item item) {
+    int slot = findInInventory(item);
+    if (slot == -1)
+      return false;
+    pickItemSlot(slot);
+    return true;
   }
 }

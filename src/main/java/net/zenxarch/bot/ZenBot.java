@@ -26,11 +26,11 @@ public class ZenBot implements ClientModInitializer {
   private static MultiTask TASKQUEUE =
       new MultiTask("Task Queue", new ArrayList<Task>());
 
-  private static ZenBot INSTANCE;
+  private static ZenBot __instance;
 
   @Override
   public void onInitializeClient() {
-    INSTANCE = this;
+    __instance = this;
     // This code runs as soon as Minecraft is in a mod-load-ready
     // state. However, some things (like resources) may still be
     // uninitialized. Proceed with mild caution.
@@ -70,6 +70,6 @@ public class ZenBot implements ClientModInitializer {
   }
 
   public Logger getLogger() { return LOGGER; }
-  public static ZenBot getInstance() { return getInstance(); };
+  public static ZenBot getInstance() { return __instance; };
   public static MultiTask getQueue() { return TASKQUEUE; }
 }
