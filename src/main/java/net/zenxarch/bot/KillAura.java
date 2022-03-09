@@ -6,6 +6,14 @@ import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.HoglinEntity;
+import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.entity.passive.GolemEntity;
+import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
@@ -18,7 +26,6 @@ public final class KillAura {
       MinecraftClient.getInstance();
   private static boolean wasBlocking;
   private static boolean wasPathing;
-
   private static Entity target;
   private static boolean shouldBlock;
 
@@ -59,6 +66,16 @@ public final class KillAura {
     updateTarget();
     if (target == null)
       return;
+    if (!wasPathing && BaritoneAPI.getProvider()
+                           .getPrimaryBaritone()
+                           .getPathingBehavior()
+                           .isPathing()) {
+      wasPathing = true;
+      BaritoneAPI.getProvider()
+          .getPrimaryBaritone()
+          .getCommandManager()
+          .execute("pause");
+    }
     if (mc.currentScreen != null && mc.currentScreen instanceof
                                         HandledScreen)
       p.closeHandledScreen();
@@ -82,6 +99,27 @@ public final class KillAura {
       blockShield();
     else
       unblockShield();
+  }
+
+  private static boolean needsBlock() {
+    if (target instanceof PassiveEntity &&
+        !(target instanceof HoglinEntity))
+      return false;
+    if (target instanceof ProjectileEntity pe) {
+      return checkProjectile(pe);
+    }
+    return true;
+  }
+
+  private static boolean checkProjectile(ProjectileEntity pe) {
+    if (pe.getVelocity().lengthSquared() < 0.01)
+      return false;
+    var projTop = p.getPos().subtract(pe.getPos());
+    var cosx = projTop.dotProduct(pe.getVelocity());
+    if (cosx <= 0)
+      return false;
+    cosx /= projTop.length() * pe.getVelocity().length();
+    return cosx > 0.5;
   }
 
   private static boolean handleCrit() {
