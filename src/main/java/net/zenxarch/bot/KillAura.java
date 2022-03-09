@@ -1,16 +1,11 @@
 package net.zenxarch.bot;
 
+import baritone.api.BaritoneAPI;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.passive.GolemEntity;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
@@ -18,42 +13,40 @@ import net.zenxarch.bot.util.ClientPlayerHelper;
 import net.zenxarch.bot.util.TargetUtil;
 
 public final class KillAura {
-  private static LivingEntity target;
-  private static Double targetDistance;
   private static ClientPlayerEntity p;
   private static final MinecraftClient mc =
       MinecraftClient.getInstance();
   private static boolean wasBlocking;
+  private static boolean wasPathing;
 
-  private static boolean isGood(LivingEntity e) {
-    if (!e.isAlive() || e.isDead())
-      return false;
-    if (e instanceof AnimalEntity && e.isBaby())
-      return false;
-    if (e instanceof GolemEntity || e instanceof VillagerEntity ||
-        e instanceof TameableEntity)
-      return false;
-    if (e instanceof PlayerEntity p && p.isCreative())
-      return false;
-    return p.canSee(e);
-  }
+  private static Entity target;
+  private static boolean shouldBlock;
 
   private static void updateTarget() {
-    var nearbyTargets = TargetUtil.getNearbyTargets();
-    targetDistance = Double.POSITIVE_INFINITY;
-    target = null;
-    for (int i = 0; i < nearbyTargets.size(); i++) {
-      var t = nearbyTargets.get(i);
-      if (isGood(t.getRight()) && targetDistance > t.getLeft()) {
-        targetDistance = t.getLeft();
-        target = t.getRight();
-      }
-    }
+    shouldBlock = true;
+    target = TargetUtil.getNearestProjectile();
+    if (target != null)
+      return;
+    target = TargetUtil.getNearestHostile();
+    if (target != null)
+      return;
+    target = TargetUtil.getNearestPassive();
+    shouldBlock = false;
   }
 
   public static boolean needsControl() {
     if (target == null) {
       unblockShield();
+      if (wasPathing && BaritoneAPI.getProvider()
+                            .getPrimaryBaritone()
+                            .getPathingBehavior()
+                            .isPathing()) {
+        BaritoneAPI.getProvider()
+            .getPrimaryBaritone()
+            .getCommandManager()
+            .execute("resume");
+        wasPathing = false;
+      }
       return false;
     }
     return true;
@@ -63,29 +56,41 @@ public final class KillAura {
     p = mc.player;
     if (p == null || p.isDead() || p.isSpectator() || p.isSleeping())
       return;
-    if (mc.currentScreen != null &&
-        !(mc.currentScreen instanceof HandledScreen))
-      return;
     updateTarget();
     if (target == null)
       return;
-    if (mc.currentScreen != null)
+    if (mc.currentScreen != null && mc.currentScreen instanceof
+                                        HandledScreen)
       p.closeHandledScreen();
+    if (!wasPathing && BaritoneAPI.getProvider()
+                           .getPrimaryBaritone()
+                           .getPathingBehavior()
+                           .isPathing()) {
+      wasPathing = true;
+      BaritoneAPI.getProvider()
+          .getPrimaryBaritone()
+          .getCommandManager()
+          .execute("pause");
+    }
     if (ClientPlayerHelper.lookingAt() != target) {
       ClientPlayerHelper.lookAt(target);
       ClientPlayerHelper.syncRotation();
     }
     if (handleCrit())
       attackTarget();
-    else
+    if (shouldBlock)
       blockShield();
+    else
+      unblockShield();
   }
 
   private static boolean handleCrit() {
+    if (!(target instanceof LivingEntity))
+      return false;
     var canCrit =
         !(p.isSubmergedInWater() || p.isClimbing() || p.isInLava());
     if (canCrit) {
-      if (p.isOnGround()) {
+      if (p.isOnGround() && target.getY() >= p.getY() - 1) {
         p.jump();
         return false;
       } else if (p.getVelocity().y > 0)

@@ -1,47 +1,134 @@
 package net.zenxarch.bot.util;
 
 import java.util.ArrayList;
+import java.util.function.Predicate;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.Pair;
+import net.minecraft.entity.mob.EndermanEntity;
+import net.minecraft.entity.mob.HoglinEntity;
+import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.PhantomEntity;
+import net.minecraft.entity.mob.SlimeEntity;
+import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.entity.passive.ChickenEntity;
+import net.minecraft.entity.passive.CodEntity;
+import net.minecraft.entity.passive.CowEntity;
+import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.entity.passive.PigEntity;
+import net.minecraft.entity.passive.RabbitEntity;
+import net.minecraft.entity.passive.SalmonEntity;
+import net.minecraft.entity.passive.SheepEntity;
+import net.minecraft.entity.projectile.ArrowEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 
 public class TargetUtil {
-  private static ArrayList<LivingEntity> possibleTargets =
-      new ArrayList<LivingEntity>(0);
+  private static final ArrayList<MobEntity> hostiles =
+      new ArrayList<MobEntity>();
+  private static final ArrayList<PassiveEntity> passives =
+      new ArrayList<PassiveEntity>();
+  private static final ArrayList<ProjectileEntity> projectiles =
+      new ArrayList<ProjectileEntity>();
   private static final MinecraftClient mc =
       MinecraftClient.getInstance();
+  private static final Class[] __passiveClasses = {
+      CodEntity.class,   SalmonEntity.class, CowEntity.class,
+      SheepEntity.class, PigEntity.class,    ChickenEntity.class,
+      RabbitEntity.class};
 
   public static void handleEntityLoad(Entity e) {
-    if (e instanceof LivingEntity le) {
-      if (le == mc.player)
+    if (e instanceof MobEntity le) {
+      if (e == mc.player)
         return;
-      possibleTargets.add(le);
+      handleLiving(le);
+    }
+    if (e instanceof ArrowEntity pe) {
+      projectiles.add(pe);
+    }
+  }
+
+  private static void handleLiving(MobEntity e) {
+    if (e instanceof HostileEntity || e instanceof HoglinEntity ||
+        e instanceof SlimeEntity) {
+      hostiles.add(e);
+    }
+    if (!(e instanceof PassiveEntity pe))
+      return;
+    for (int i = 0; i < __passiveClasses.length; i++) {
+      if (e.getClass().equals(__passiveClasses[i])) {
+        passives.add(pe);
+      }
     }
   }
 
   public static void handleEntityUnload(Entity e) {
-    if (e instanceof LivingEntity le) {
-      possibleTargets.remove(le);
+    if (e instanceof MobEntity) {
+      hostiles.remove(e);
+    }
+    if (e instanceof PassiveEntity) {
+      passives.remove(e);
+    }
+    if (e instanceof ProjectileEntity pe) {
+      projectiles.remove(e);
     }
   }
 
-  public static ArrayList<Pair<Double, LivingEntity>>
-  getNearbyTargets() {
-    var result = new ArrayList<Pair<Double, LivingEntity>>(0);
-    var p = mc.player;
-    possibleTargets.forEach(t -> {
-      var d = dSq(t, p);
-      if (d < 3.5 * 3.5)
-        result.add(new Pair<Double, LivingEntity>(d, t));
-    });
-    return result;
+  public static MobEntity getNearestHostile() {
+    hostiles.removeIf(e -> e == null || !e.isAlive() || e.isDead());
+    return findNearest(hostiles, e -> checkHostile(e));
   }
 
-  private static double dSq(LivingEntity e, LivingEntity p) {
-    var dx = e.getX() - p.getX();
-    var dy = e.getY() - p.getY();
-    var dz = e.getZ() - p.getZ();
-    return dx * dx + dy * dy + dz * dz;
+  public static PassiveEntity getNearestPassive() {
+    passives.removeIf(e -> e == null || !e.isAlive() || e.isDead());
+    return findNearest(passives, e -> {
+      if (e instanceof AnimalEntity a) {
+        return !a.isBaby();
+      }
+      return true;
+    });
+  }
+
+  public static ProjectileEntity getNearestProjectile() {
+    // projectiles.removeIf(p -> p == null);
+    return findNearest(projectiles, e -> {
+      if (e.getVelocity().lengthSquared() < 0.01)
+        return false;
+      var v = mc.player.getPos().subtract(e.getPos());
+      var d = e.getVelocity().dotProduct(v);
+      if (d <= 0)
+        return false;
+      if (v.lengthSquared() <= 1.0)
+        return true;
+      d /= v.length() * e.getVelocity().length();
+      return d > 0.5;
+    });
+  }
+
+  private static boolean checkHostile(MobEntity e) {
+    if (e instanceof EndermanEntity eman && !eman.isAngry())
+      return false;
+    if (e.isAttacking() && !(e instanceof PhantomEntity))
+      return false;
+    return true;
+  }
+
+  private static <T extends Entity> T findNearest(ArrayList<T> list,
+                                                  Predicate<T> f) {
+    // if(list.size() == 0) return null;
+    var m = 4.6 * 4.6;
+    double d;
+    T t = null;
+    T e = null;
+    for (int i = 0; i < list.size(); i++) {
+      e = list.get(i);
+      if (!f.test(e))
+        continue;
+      d = mc.player.squaredDistanceTo(e);
+      if (d < m && mc.player.canSee(e)) {
+        m = d;
+        t = e;
+      }
+    }
+    return t;
   }
 }
