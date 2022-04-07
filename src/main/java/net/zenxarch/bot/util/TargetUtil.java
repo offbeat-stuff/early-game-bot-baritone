@@ -4,23 +4,16 @@ import java.util.ArrayList;
 import java.util.function.Predicate;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.HoglinEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PiglinEntity;
 import net.minecraft.entity.mob.SlimeEntity;
 import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.passive.ChickenEntity;
-import net.minecraft.entity.passive.CodEntity;
-import net.minecraft.entity.passive.CowEntity;
 import net.minecraft.entity.passive.PassiveEntity;
-import net.minecraft.entity.passive.PigEntity;
-import net.minecraft.entity.passive.RabbitEntity;
-import net.minecraft.entity.passive.SalmonEntity;
-import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.zenxarch.bot.mixin.ProjectileEntityAccessor;
@@ -34,10 +27,10 @@ public class TargetUtil {
       new ArrayList<ProjectileEntity>();
   private static final MinecraftClient mc =
       MinecraftClient.getInstance();
-  private static final Class<?>[] __passiveClasses = {
-      CodEntity.class,   SalmonEntity.class, CowEntity.class,
-      SheepEntity.class, PigEntity.class,    ChickenEntity.class,
-      RabbitEntity.class};
+  private static final EntityType[] __passiveTypes = {
+      EntityType.COD,   EntityType.SALMON, EntityType.COW,
+      EntityType.SHEEP, EntityType.PIG,    EntityType.CHICKEN,
+      EntityType.RABBIT};
 
   public static void handleEntityLoad(Entity e) {
     if (e instanceof MobEntity le) {
@@ -57,8 +50,8 @@ public class TargetUtil {
     }
     if (!(e instanceof PassiveEntity pe))
       return;
-    for (int i = 0; i < __passiveClasses.length; i++) {
-      if (e.getClass().equals(__passiveClasses[i])) {
+    for (int i = 0; i < __passiveTypes.length; i++) {
+      if (e.getType().equals(__passiveTypes[i])) {
         passives.add(pe);
       }
     }
@@ -100,9 +93,11 @@ public class TargetUtil {
         e
         -> { return !(((ProjectileEntityAccessor)e).getInGround()); },
         e -> {
-          var h = ProjectileUtil.getCollision(
-              e, entity -> entity.equals(mc.player));
-          if (h.getType().equals(HitResult.Type.ENTITY))
+          if (!(e instanceof ArrowEntity arrow))
+            return false;
+          var h =
+              ProjectileEntitySimulator.simulateMovement(arrow, 4);
+          if (h != null && h.getType().equals(HitResult.Type.ENTITY))
             return ((EntityHitResult)h).getEntity().equals(mc.player);
           return false;
         });
