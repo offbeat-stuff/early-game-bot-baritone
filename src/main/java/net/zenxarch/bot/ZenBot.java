@@ -1,6 +1,5 @@
 package net.zenxarch.bot;
 
-import java.util.ArrayList;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -10,8 +9,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.zenxarch.bot.command.ZenCommandManager;
-import net.zenxarch.bot.task.MultiTask;
-import net.zenxarch.bot.task.Task;
+import net.zenxarch.bot.process.CraftProcess;
 import net.zenxarch.bot.util.TargetUtil;
 import org.apache.logging.log4j.*;
 
@@ -22,9 +20,6 @@ public class ZenBot implements ClientModInitializer {
   // logger's name. That way, it's clear which mod wrote info,
   // warnings, and errors.
   public static final Logger LOGGER = LogManager.getLogger("zenbot");
-
-  private static MultiTask TASKQUEUE =
-      new MultiTask("Task Queue", new ArrayList<Task>());
 
   private static ZenBot __instance;
 
@@ -51,6 +46,7 @@ public class ZenBot implements ClientModInitializer {
     if (mc.world == null)
       return;
     KillAura.onTick();
+    CraftProcess.preTick();
   }
 
   private void handleTickEnd(MinecraftClient mc) {
@@ -58,7 +54,7 @@ public class ZenBot implements ClientModInitializer {
       return;
     if (KillAura.needsControl())
       return;
-    TASKQUEUE.onTick();
+    CraftProcess.postTick();
   }
 
   private void handleEntityLoad(Entity e, World w) {
@@ -71,5 +67,4 @@ public class ZenBot implements ClientModInitializer {
 
   public Logger getLogger() { return LOGGER; }
   public static ZenBot getInstance() { return __instance; };
-  public static MultiTask getQueue() { return TASKQUEUE; }
 }

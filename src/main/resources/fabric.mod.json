@@ -10,7 +10,6 @@
   ],
   "contact": {
   },
-
   "license": "MIT",
   "icon": "assets/zenbot/icon.png",
 
@@ -18,12 +17,15 @@
   "entrypoints": {
     "client":["net.zenxarch.bot.ZenBot"]
   },
-
+  "mixins": [
+    "zenbot.mixins.json"
+  ],
   "depends": {
-    "fabricloader": ">=0.12.12",
+    "fabricloader": ">=${loader_version}",
     "fabric": "*",
-    "minecraft": "1.18.x",
-    "java": ">=17"
+    "minecraft": ">=${minecraft_version} <=${supported_minecraft_version}",
+    "java": ">=17",
+    "baritone": ">=${baritone_version}"
   },
   "suggests": {
   }

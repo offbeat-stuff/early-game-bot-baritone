@@ -4,11 +4,10 @@ import java.util.ArrayList;
 import java.util.function.Predicate;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.mob.HoglinEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.PhantomEntity;
+import net.minecraft.entity.mob.PiglinEntity;
 import net.minecraft.entity.mob.SlimeEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.ChickenEntity;
@@ -21,6 +20,10 @@ import net.minecraft.entity.passive.SalmonEntity;
 import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
+import net.zenxarch.bot.mixin.ProjectileEntityAccessor;
 
 public class TargetUtil {
   private static final ArrayList<MobEntity> hostiles =
@@ -31,7 +34,7 @@ public class TargetUtil {
       new ArrayList<ProjectileEntity>();
   private static final MinecraftClient mc =
       MinecraftClient.getInstance();
-  private static final Class[] __passiveClasses = {
+  private static final Class<?>[] __passiveClasses = {
       CodEntity.class,   SalmonEntity.class, CowEntity.class,
       SheepEntity.class, PigEntity.class,    ChickenEntity.class,
       RabbitEntity.class};
@@ -75,47 +78,52 @@ public class TargetUtil {
 
   public static MobEntity getNearestHostile() {
     hostiles.removeIf(e -> e == null || !e.isAlive() || e.isDead());
-    return findNearest(hostiles, e -> checkHostile(e));
+    return findNearest(
+        hostiles, 4.0,
+        e -> checkHostile(e), e -> mc.player.canSee(e));
   }
 
   public static PassiveEntity getNearestPassive() {
     passives.removeIf(e -> e == null || !e.isAlive() || e.isDead());
-    return findNearest(passives, e -> {
+    return findNearest(passives, 4.0, e -> {
       if (e instanceof AnimalEntity a) {
         return !a.isBaby();
       }
       return true;
-    });
+    }, e -> mc.player.canSee(e));
   }
 
   public static ProjectileEntity getNearestProjectile() {
     // projectiles.removeIf(p -> p == null);
-    return findNearest(projectiles, e -> {
-      if (e.getVelocity().lengthSquared() < 0.01)
-        return false;
-      var v = mc.player.getPos().subtract(e.getPos());
-      var d = e.getVelocity().dotProduct(v);
-      if (d <= 0)
-        return false;
-      if (v.lengthSquared() <= 1.0)
-        return true;
-      d /= v.length() * e.getVelocity().length();
-      return d > 0.5;
-    });
+    return findNearest(
+        projectiles, 12,
+        e
+        -> { return !(((ProjectileEntityAccessor)e).getInGround()); },
+        e -> {
+          var h = ProjectileUtil.getCollision(
+              e, entity -> entity.equals(mc.player));
+          if (h.getType().equals(HitResult.Type.ENTITY))
+            return ((EntityHitResult)h).getEntity().equals(mc.player);
+          return false;
+        });
   }
 
   private static boolean checkHostile(MobEntity e) {
-    if (e instanceof EndermanEntity eman && !eman.isAngry())
+    /* if (e instanceof EndermanEntity eman && !eman.isAngry())
       return false;
     if (e.isAttacking() && !(e instanceof PhantomEntity))
+      return false; */
+    if (e instanceof PiglinEntity)
       return false;
     return true;
   }
 
   private static <T extends Entity> T findNearest(ArrayList<T> list,
-                                                  Predicate<T> f) {
+                                                  double maxD,
+                                                  Predicate<T> f,
+                                                  Predicate<T> s) {
     // if(list.size() == 0) return null;
-    var m = 4.6 * 4.6;
+    var m = maxD * maxD;
     double d;
     T t = null;
     T e = null;
@@ -124,7 +132,7 @@ public class TargetUtil {
       if (!f.test(e))
         continue;
       d = mc.player.squaredDistanceTo(e);
-      if (d < m && mc.player.canSee(e)) {
+      if (d < m && s.test(e)) {
         m = d;
         t = e;
       }

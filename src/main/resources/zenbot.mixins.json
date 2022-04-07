@@ -1,0 +1,13 @@
+{
+    "required": true,
+    "package": "net.zenxarch.bot.mixin",
+    "compatibilityLevel": "JAVA_17",
+    "mixins": [
+      "ProjectileEntityAccessor"
+    ],
+    "client": [],
+    "server": [],
+    "injectors": {
+      "defaultRequire": 1
+    }
+  }

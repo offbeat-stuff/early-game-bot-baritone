@@ -6,14 +6,6 @@ import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.HoglinEntity;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.passive.GolemEntity;
-import net.minecraft.entity.passive.PassiveEntity;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
@@ -101,27 +93,6 @@ public final class KillAura {
       unblockShield();
   }
 
-  private static boolean needsBlock() {
-    if (target instanceof PassiveEntity &&
-        !(target instanceof HoglinEntity))
-      return false;
-    if (target instanceof ProjectileEntity pe) {
-      return checkProjectile(pe);
-    }
-    return true;
-  }
-
-  private static boolean checkProjectile(ProjectileEntity pe) {
-    if (pe.getVelocity().lengthSquared() < 0.01)
-      return false;
-    var projTop = p.getPos().subtract(pe.getPos());
-    var cosx = projTop.dotProduct(pe.getVelocity());
-    if (cosx <= 0)
-      return false;
-    cosx /= projTop.length() * pe.getVelocity().length();
-    return cosx > 0.5;
-  }
-
   private static boolean handleCrit() {
     if (!(target instanceof LivingEntity))
       return false;
@@ -146,14 +117,14 @@ public final class KillAura {
   private static void blockShield() {
     if (!p.getOffHandStack().getItem().equals(Items.SHIELD))
       return;
-    mc.options.keyUse.setPressed(true);
+    mc.options.useKey.setPressed(true);
     wasBlocking = true;
   }
 
   private static void unblockShield() {
     if (!wasBlocking)
       return;
-    mc.options.keyUse.setPressed(false);
+    mc.options.useKey.setPressed(false);
     wasBlocking = false;
   }
 
