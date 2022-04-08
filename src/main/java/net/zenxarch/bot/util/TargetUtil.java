@@ -14,8 +14,6 @@ import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.zenxarch.bot.mixin.ProjectileEntityAccessor;
 
 public class TargetUtil {
@@ -95,11 +93,7 @@ public class TargetUtil {
         e -> {
           if (!(e instanceof ArrowEntity arrow))
             return false;
-          var h =
-              ProjectileEntitySimulator.simulateMovement(arrow, 4);
-          if (h != null && h.getType().equals(HitResult.Type.ENTITY))
-            return ((EntityHitResult)h).getEntity().equals(mc.player);
-          return false;
+          return ProjectileEntitySimulator.wouldHitPlayer(arrow, 10);
         });
   }
 
