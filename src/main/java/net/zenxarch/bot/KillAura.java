@@ -84,17 +84,7 @@ public final class KillAura {
     pausePathing();
     if (mc.currentScreen != null && mc.currentScreen instanceof HandledScreen)
       p.closeHandledScreen();
-    if (!wasPathing && BaritoneAPI.getProvider()
-                           .getPrimaryBaritone()
-                           .getPathingBehavior()
-                           .isPathing()) {
-      wasPathing = true;
-      BaritoneAPI.getProvider()
-          .getPrimaryBaritone()
-          .getCommandManager()
-          .execute("pause");
-    }
-    if (!ClientPlayerHelper.lookingAt().equals(target)) {
+    if (ClientPlayerHelper.lookingAt() != target) {
       ClientPlayerHelper.lookAt(target);
       ClientPlayerHelper.syncRotation();
     }
