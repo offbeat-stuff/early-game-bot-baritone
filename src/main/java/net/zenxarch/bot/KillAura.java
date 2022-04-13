@@ -14,8 +14,8 @@ import net.zenxarch.bot.util.TargetUtil;
 
 public final class KillAura {
   private static ClientPlayerEntity p;
-  private static final MinecraftClient mc =
-      MinecraftClient.getInstance();
+  private static final MinecraftClient mc = MinecraftClient.getInstance();
+  private static boolean isActive;
   private static boolean wasBlocking;
   private static boolean wasPathing;
   private static Entity target;
@@ -33,31 +33,9 @@ public final class KillAura {
     shouldBlock = false;
   }
 
-  public static boolean needsControl() {
-    if (target == null) {
-      unblockShield();
-      if (wasPathing && BaritoneAPI.getProvider()
-                            .getPrimaryBaritone()
-                            .getPathingBehavior()
-                            .isPathing()) {
-        BaritoneAPI.getProvider()
-            .getPrimaryBaritone()
-            .getCommandManager()
-            .execute("resume");
-        wasPathing = false;
-      }
-      return false;
-    }
-    return true;
-  }
+  public static void toggle() { isActive = !isActive; }
 
-  public static void onTick() {
-    p = mc.player;
-    if (p == null || p.isDead() || p.isSpectator() || p.isSleeping())
-      return;
-    updateTarget();
-    if (target == null)
-      return;
+  private static void pausePathing() {
     if (!wasPathing && BaritoneAPI.getProvider()
                            .getPrimaryBaritone()
                            .getPathingBehavior()
@@ -68,8 +46,43 @@ public final class KillAura {
           .getCommandManager()
           .execute("pause");
     }
-    if (mc.currentScreen != null && mc.currentScreen instanceof
-                                        HandledScreen)
+  }
+
+  private static void resumePathing() {
+    if (wasPathing && BaritoneAPI.getProvider()
+                          .getPrimaryBaritone()
+                          .getPathingBehavior()
+                          .isPathing()) {
+      BaritoneAPI.getProvider()
+          .getPrimaryBaritone()
+          .getCommandManager()
+          .execute("resume");
+      wasPathing = false;
+    }
+  }
+
+  public static boolean needsControl() {
+    if (target == null) {
+      unblockShield();
+      resumePathing();
+      return false;
+    }
+    return true;
+  }
+
+  public static void onTick() {
+    if (!isActive) {
+      target = null;
+      return;
+    }
+    p = mc.player;
+    if (p == null || p.isDead() || p.isSpectator() || p.isSleeping())
+      return;
+    updateTarget();
+    if (target == null)
+      return;
+    pausePathing();
+    if (mc.currentScreen != null && mc.currentScreen instanceof HandledScreen)
       p.closeHandledScreen();
     if (!wasPathing && BaritoneAPI.getProvider()
                            .getPrimaryBaritone()
@@ -81,7 +94,7 @@ public final class KillAura {
           .getCommandManager()
           .execute("pause");
     }
-    if (ClientPlayerHelper.lookingAt() != target) {
+    if (!ClientPlayerHelper.lookingAt().equals(target)) {
       ClientPlayerHelper.lookAt(target);
       ClientPlayerHelper.syncRotation();
     }
@@ -96,8 +109,7 @@ public final class KillAura {
   private static boolean handleCrit() {
     if (!(target instanceof LivingEntity))
       return false;
-    var canCrit =
-        !(p.isSubmergedInWater() || p.isClimbing() || p.isInLava());
+    var canCrit = !(p.isSubmergedInWater() || p.isClimbing() || p.isInLava());
     if (canCrit) {
       if (p.isOnGround() && target.getY() >= p.getY() - 1) {
         p.jump();
@@ -129,11 +141,11 @@ public final class KillAura {
   }
 
   private static void switchItem() {
-    var items = new Item[] {
-        Items.NETHERITE_AXE, Items.NETHERITE_SWORD, Items.DIAMOND_AXE,
-        Items.DIAMOND_SWORD, Items.IRON_AXE,        Items.IRON_SWORD,
-        Items.STONE_AXE,     Items.STONE_SWORD,     Items.WOODEN_AXE,
-        Items.WOODEN_SWORD};
+    var items = new Item[] {Items.NETHERITE_AXE, Items.NETHERITE_SWORD,
+                            Items.DIAMOND_AXE,   Items.DIAMOND_SWORD,
+                            Items.IRON_AXE,      Items.IRON_SWORD,
+                            Items.STONE_AXE,     Items.STONE_SWORD,
+                            Items.WOODEN_AXE,    Items.WOODEN_SWORD};
     for (int i = 0; i < items.length; i++) {
       if (ClientPlayerHelper.pickItem(items[i]))
         return;

@@ -14,17 +14,12 @@ import net.minecraft.recipe.SmokingRecipe;
 
 public class RecipeUtil {
 
-  private static ArrayList<ShapedRecipe> craftingRecipes =
-      new ArrayList<>();
-  private static ArrayList<BlastingRecipe> blastingRecipes =
-      new ArrayList<>();
-  private static ArrayList<SmokingRecipe> smokingRecipes =
-      new ArrayList<>();
-  private static ArrayList<SmeltingRecipe> smeltingRecipes =
-      new ArrayList<>();
+  private static ArrayList<ShapedRecipe> craftingRecipes = new ArrayList<>();
+  private static ArrayList<BlastingRecipe> blastingRecipes = new ArrayList<>();
+  private static ArrayList<SmokingRecipe> smokingRecipes = new ArrayList<>();
+  private static ArrayList<SmeltingRecipe> smeltingRecipes = new ArrayList<>();
 
-  private static final MinecraftClient mc =
-      MinecraftClient.getInstance();
+  private static final MinecraftClient mc = MinecraftClient.getInstance();
 
   public static void recache() {
     var rm = mc.getNetworkHandler().getRecipeManager();
@@ -48,8 +43,7 @@ public class RecipeUtil {
     return res;
   }
 
-  public static HashMap<List<Item>, Integer>
-  simpleIngredient(Recipe<?> r) {
+  public static HashMap<List<Item>, Integer> simpleIngredient(Recipe<?> r) {
     var res = new HashMap<List<Item>, Integer>();
     var iter = r.getIngredients().iterator();
     while (iter.hasNext()) {
@@ -62,23 +56,19 @@ public class RecipeUtil {
     return res;
   }
 
-  public static ArrayList<BlastingRecipe>
-  findBlastingRecipes(Item item) {
+  public static ArrayList<BlastingRecipe> findBlastingRecipes(Item item) {
     return recipeFilter(blastingRecipes, item);
   }
 
-  public static ArrayList<SmokingRecipe>
-  findSmokingRecipes(Item item) {
+  public static ArrayList<SmokingRecipe> findSmokingRecipes(Item item) {
     return recipeFilter(smokingRecipes, item);
   }
 
-  public static ArrayList<SmeltingRecipe>
-  findSmeltingRecipes(Item item) {
+  public static ArrayList<SmeltingRecipe> findSmeltingRecipes(Item item) {
     return recipeFilter(smeltingRecipes, item);
   }
 
-  public static ArrayList<ShapedRecipe>
-  findCraftingRecipes(Item item) {
+  public static ArrayList<ShapedRecipe> findCraftingRecipes(Item item) {
     return recipeFilter(craftingRecipes, item);
   }
 

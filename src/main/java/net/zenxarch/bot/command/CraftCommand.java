@@ -17,24 +17,21 @@ public final class CraftCommand {
   public static void register(
       CommandDispatcher<FabricClientCommandSource> Dispatcher) {
     Dispatcher.register(ClientCommandManager.literal("zcraft").then(
-        ClientCommandManager
-            .argument("item", ItemStackArgumentType.itemStack())
+        ClientCommandManager.argument("item", ItemStackArgumentType.itemStack())
             .then(
                 ClientCommandManager
                     .argument("amount", IntegerArgumentType.integer())
-                    .executes(
-                        ctx
-                        -> execute(
-                            ctx.getSource(),
-                            ItemStackArgumentType
-                                .getItemStackArgument(ctx, "item")
-                                .getItem(),
-                            IntegerArgumentType.getInteger(
-                                ctx, "amount"))))));
+                    .executes(ctx
+                              -> execute(ctx.getSource(),
+                                         ItemStackArgumentType
+                                             .getItemStackArgument(ctx, "item")
+                                             .getItem(),
+                                         IntegerArgumentType.getInteger(
+                                             ctx, "amount"))))));
   }
 
-  private static int execute(FabricClientCommandSource source,
-                             Item item, Integer amt) {
+  private static int execute(FabricClientCommandSource source, Item item,
+                             Integer amt) {
     Block b = Blocks.CRAFTING_TABLE;
     RecipeUtil.recache();
     if (trySmelt(item, amt)) {

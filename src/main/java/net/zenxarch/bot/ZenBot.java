@@ -32,14 +32,11 @@ public class ZenBot implements ClientModInitializer {
     LOGGER.info("ZenBot loaded have fun botting.");
     ZenCommandManager.registerCommands();
     LOGGER.info("registered commands");
-    ClientEntityEvents.ENTITY_LOAD.register(
-        (e, w) -> handleEntityLoad(e, w));
+    ClientEntityEvents.ENTITY_LOAD.register((e, w) -> handleEntityLoad(e, w));
     ClientEntityEvents.ENTITY_UNLOAD.register(
         (e, w) -> handleEntityUnload(e, w));
-    ClientTickEvents.START_CLIENT_TICK.register(
-        mc -> handleTickStart(mc));
-    ClientTickEvents.END_CLIENT_TICK.register(
-        mc -> handleTickEnd(mc));
+    ClientTickEvents.START_CLIENT_TICK.register(mc -> handleTickStart(mc));
+    ClientTickEvents.END_CLIENT_TICK.register(mc -> handleTickEnd(mc));
   }
 
   private void handleTickStart(MinecraftClient mc) {

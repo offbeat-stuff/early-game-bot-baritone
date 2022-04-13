@@ -21,23 +21,21 @@ import net.minecraft.util.Pair;
 import net.zenxarch.bot.util.RecipeUtil;
 
 public final class CraftProcess {
-  private static ArrayList<Pair<ShapedRecipe, Integer>>
-      craftingQueue = new ArrayList<>();
-  private static ArrayList<Pair<SmeltingRecipe, Integer>>
-      smeltingQueue = new ArrayList<>();
+  private static ArrayList<Pair<ShapedRecipe, Integer>> craftingQueue =
+      new ArrayList<>();
+  private static ArrayList<Pair<SmeltingRecipe, Integer>> smeltingQueue =
+      new ArrayList<>();
   // private static ArrayList<BlastingRecipe> blastingQueue =
   //   new ArrayList<>();
   // private static ArrayList<SmokingRecipe> smokingQueue =
   //   new ArrayList<>();
-  private static final MinecraftClient mc =
-      MinecraftClient.getInstance();
+  private static final MinecraftClient mc = MinecraftClient.getInstance();
   public static void preTick() {
     if (craftingQueue.size() > 0 && mc.currentScreen instanceof
                                         CraftingScreen) {
       craft();
     }
-    if (smeltingQueue.size() > 0 && mc.currentScreen instanceof
-                                        FurnaceScreen) {
+    if (smeltingQueue.size() > 0 && mc.currentScreen instanceof FurnaceScreen) {
       smelt();
     }
   }
@@ -52,13 +50,11 @@ public final class CraftProcess {
     for (var is : inv) {
       for (var k : sr.keySet()) {
         if (k.contains(is.getItem()))
-          itemAvail.put(k,
-                        itemAvail.getOrDefault(k, 0) + is.getCount());
+          itemAvail.put(k, itemAvail.getOrDefault(k, 0) + is.getCount());
       }
     }
     for (var e : sr.entrySet()) {
-      itemAvail.put(e.getKey(),
-                    itemAvail.get(e.getKey()) / e.getValue());
+      itemAvail.put(e.getKey(), itemAvail.get(e.getKey()) / e.getValue());
     }
     return itemAvail.values().stream().min(Integer::compare).get();
   }
@@ -70,8 +66,7 @@ public final class CraftProcess {
     var im = mc.interactionManager;
     var os = csh.getCraftingResultSlotIndex();
     if (csh.getSlot(os).getStack().equals(r.getLeft().getOutput())) {
-      im.clickSlot(csh.syncId, os, 0, SlotActionType.QUICK_MOVE,
-                   mc.player);
+      im.clickSlot(csh.syncId, os, 0, SlotActionType.QUICK_MOVE, mc.player);
       r.setRight(r.getRight() - 1);
       if (r.getRight() == 0) {
         craftingQueue.remove(0);
@@ -90,8 +85,7 @@ public final class CraftProcess {
     // var fs = 1;
     var im = mc.interactionManager;
     if (csh.getSlot(0).getStack().equals(r.getOutput())) {
-      im.clickSlot(csh.syncId, os, 0, SlotActionType.QUICK_MOVE,
-                   mc.player);
+      im.clickSlot(csh.syncId, os, 0, SlotActionType.QUICK_MOVE, mc.player);
       var q = smeltingQueue.get(0);
       q.setRight(q.getRight() - 1);
       if (q.getRight() == 0) {
@@ -105,13 +99,11 @@ public final class CraftProcess {
     if (csh.isBurning()) {
       return;
     }
-    for (int i = csh.slots.size() - 9 - 27; i < csh.slots.size();
-         i++) {
+    for (int i = csh.slots.size() - 9 - 27; i < csh.slots.size(); i++) {
       if (!csh.getSlot(i).getStack().isOf(Items.COAL)) {
         continue;
       }
-      im.clickSlot(csh.syncId, i, 0, SlotActionType.QUICK_MOVE,
-                   mc.player);
+      im.clickSlot(csh.syncId, i, 0, SlotActionType.QUICK_MOVE, mc.player);
       break;
     }
   }

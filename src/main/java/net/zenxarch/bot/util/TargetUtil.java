@@ -3,8 +3,10 @@ package net.zenxarch.bot.util;
 import java.util.ArrayList;
 import java.util.function.Predicate;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.HoglinEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
@@ -14,6 +16,7 @@ import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.item.Items;
 import net.zenxarch.bot.mixin.ProjectileEntityAccessor;
 
 public class TargetUtil {
@@ -23,15 +26,18 @@ public class TargetUtil {
       new ArrayList<PassiveEntity>();
   private static final ArrayList<ProjectileEntity> projectiles =
       new ArrayList<ProjectileEntity>();
-  private static final MinecraftClient mc =
-      MinecraftClient.getInstance();
+  private static final ArrayList<OtherClientPlayerEntity> players =
+      new ArrayList<OtherClientPlayerEntity>();
+  private static final MinecraftClient mc = MinecraftClient.getInstance();
   private static final EntityType[] __passiveTypes = {
-      EntityType.COD,   EntityType.SALMON, EntityType.COW,
-      EntityType.SHEEP, EntityType.PIG,    EntityType.CHICKEN,
-      EntityType.RABBIT};
+      EntityType.COD, EntityType.SALMON,  EntityType.COW,   EntityType.SHEEP,
+      EntityType.PIG, EntityType.CHICKEN, EntityType.RABBIT};
+
+  private static ArrayList<String> playerUsernameStrings =
+      new ArrayList<String>();
 
   public static void handleEntityLoad(Entity e) {
-    if (e instanceof MobEntity le) {
+    if (e instanceof LivingEntity le) {
       if (e == mc.player)
         return;
       handleLiving(le);
@@ -41,10 +47,14 @@ public class TargetUtil {
     }
   }
 
-  private static void handleLiving(MobEntity e) {
+  private static void handleLiving(LivingEntity e) {
+    if (e instanceof OtherClientPlayerEntity other)
+      players.add(other);
+    if (!(e instanceof MobEntity mob))
+      return;
     if (e instanceof HostileEntity || e instanceof HoglinEntity ||
         e instanceof SlimeEntity) {
-      hostiles.add(e);
+      hostiles.add(mob);
     }
     if (!(e instanceof PassiveEntity pe))
       return;
@@ -56,22 +66,20 @@ public class TargetUtil {
   }
 
   public static void handleEntityUnload(Entity e) {
-    if (e instanceof MobEntity) {
+    if (e instanceof MobEntity)
       hostiles.remove(e);
-    }
-    if (e instanceof PassiveEntity) {
+    if (e instanceof PassiveEntity)
       passives.remove(e);
-    }
-    if (e instanceof ProjectileEntity pe) {
+    if (e instanceof ProjectileEntity)
       projectiles.remove(e);
-    }
+    if (e instanceof OtherClientPlayerEntity)
+      players.remove(e);
   }
 
   public static MobEntity getNearestHostile() {
     hostiles.removeIf(e -> e == null || !e.isAlive() || e.isDead());
-    return findNearest(
-        hostiles, 4.0,
-        e -> checkHostile(e), e -> mc.player.canSee(e));
+    return findNearest(hostiles, 4.0,
+                       e -> checkHostile(e), e -> mc.player.canSee(e));
   }
 
   public static PassiveEntity getNearestPassive() {
@@ -97,6 +105,30 @@ public class TargetUtil {
         });
   }
 
+  public static void handleUsername(String s) {
+    if (playerUsernameStrings.contains(s)) {
+      playerUsernameStrings.remove(s);
+    } else {
+      playerUsernameStrings.add(s);
+    }
+  }
+
+  public static OtherClientPlayerEntity getNearestEnemyPlayer() {
+    return findNearest(
+        players, 4 * 4,
+        e
+        -> { return playerUsernameStrings.contains(e.getEntityName()); },
+        e -> { return checkPlayer(e); });
+  }
+
+  public static boolean checkPlayer(OtherClientPlayerEntity p) {
+    if (p.isSpectator() || p.isCreative())
+      return false;
+    if (p.isUsingItem() && p.getOffHandStack().getItem().equals(Items.SHIELD))
+      return false;
+    return mc.player.canSee(p);
+  }
+
   private static boolean checkHostile(MobEntity e) {
     /* if (e instanceof EndermanEntity eman && !eman.isAngry())
       return false;
@@ -108,8 +140,7 @@ public class TargetUtil {
   }
 
   private static <T extends Entity> T findNearest(ArrayList<T> list,
-                                                  double maxD,
-                                                  Predicate<T> f,
+                                                  double maxD, Predicate<T> f,
                                                   Predicate<T> s) {
     // if(list.size() == 0) return null;
     var m = maxD * maxD;
