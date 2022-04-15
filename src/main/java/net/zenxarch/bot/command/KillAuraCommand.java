@@ -12,7 +12,7 @@ public class KillAuraCommand {
   public static void register(
       CommandDispatcher<FabricClientCommandSource> dispatcher) {
     dispatcher.register(
-        literal("zuara")
+        literal("zaura")
             .then(argument("Username", StringArgumentType.string())
                       .executes(ctx -> {
                         TargetUtil.handleUsername(
