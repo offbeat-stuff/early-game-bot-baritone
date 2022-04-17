@@ -16,11 +16,11 @@ public class BlockPlacementUtils {
 
   public static boolean tryPlaceAt(BlockPos pos) {
     var vpos = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
-    var hit = praycast(vpos.add(0.5, -1, 0.5), FluidHandling.ANY);
+    var hit = praycast(vpos.add(0.5, -1.1, 0.5), FluidHandling.ANY);
     if (hit.getType() != HitResult.Type.BLOCK)
       return false;
     var bhit = (BlockHitResult)hit;
-    if (!bhit.getBlockPos().equals(pos.add(0, -1, 0)) ||
+    if (!bhit.getBlockPos().equals(pos.add(0, -1.1, 0)) ||
         !bhit.getSide().equals(Direction.UP))
       return false;
     var res = mc.interactionManager.interactBlock(mc.player, mc.world,

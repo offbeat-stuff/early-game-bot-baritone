@@ -47,12 +47,12 @@ public class TargetUtil {
     projectileTarget = null;
     double hostileDist = 4.1 * 4.1;
     double passiveDist = 4.1 * 4.1;
-    double projectileDist = 16 * 16;
+    int projectileTicks = 16;
     for (Entity e : mc.world.getEntities()) {
       if (e == null || !e.isAlive())
         continue;
       if (e instanceof ProjectileEntity pe) {
-        projectileDist = handleProjectile(pe, projectileDist);
+        projectileTicks = handleProjectile(pe, projectileTicks);
         continue;
       }
       if (e instanceof MobEntity mob && !mob.isDead()) {
@@ -66,14 +66,13 @@ public class TargetUtil {
     }
   }
 
-  // TODO: check which one hits in less ticks
-  private static double handleProjectile(ProjectileEntity e, double d) {
+  private static int handleProjectile(ProjectileEntity e, int d) {
     if (e instanceof ArrowEntity arrow &&
         !((ProjectileEntityAccessor)arrow).getInGround()) {
-      var dist = mc.player.squaredDistanceTo(e);
-      if (dist < d && wouldHitPlayer(arrow, 10)) {
+      var ticks = wouldHitPlayer(arrow, d);
+      if (ticks < d) {
         projectileTarget = arrow;
-        return dist;
+        return ticks;
       }
     }
     return d;
