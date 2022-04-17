@@ -23,7 +23,7 @@ public class ClientPlayerHelper {
   }
 
   public static void lookAt(Entity e) {
-    lookAt(e.getX(), e.getY() + e.getEyeHeight(e.getPose()), e.getZ());
+    lookAt(e.getX(), e.getEyeY(), e.getZ());
   }
 
   public static Entity lookingAt() {

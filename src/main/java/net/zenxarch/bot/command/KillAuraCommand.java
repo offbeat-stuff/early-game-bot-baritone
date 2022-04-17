@@ -5,22 +5,37 @@ import static net.fabricmc.fabric.api.client.command.v1.ClientCommandManager.*;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
+import net.minecraft.text.LiteralText;
 import net.zenxarch.bot.KillAura;
 import net.zenxarch.bot.util.TargetUtil;
 
 public class KillAuraCommand {
+  private static boolean active = false;
   public static void register(
       CommandDispatcher<FabricClientCommandSource> dispatcher) {
     dispatcher.register(
         literal("zaura")
             .then(argument("Username", StringArgumentType.string())
                       .executes(ctx -> {
-                        TargetUtil.handleUsername(
-                            StringArgumentType.getString(ctx, "Username"));
+                        var username =
+                            StringArgumentType.getString(ctx, "Username");
+                        TargetUtil.handleUsername(username);
+                        if (TargetUtil.getUsernames().contains(username)) {
+                          ctx.getSource().sendFeedback(new LiteralText(
+                              "Currently targeting " + username + ";"));
+                        }
                         return 0;
                       }))
             .executes(ctx -> {
-              KillAura.toggle();
+              active = !active;
+              if (active) {
+                ctx.getSource().sendFeedback(
+                    new LiteralText("KillAura activated;"));
+              } else {
+                ctx.getSource().sendFeedback(
+                    new LiteralText("KillAura deactivated;"));
+              }
+              KillAura.setActive(active);
               return 0;
             }));
   }

@@ -1,108 +1,112 @@
 package net.zenxarch.bot.util;
 
+import static net.zenxarch.bot.util.ProjectileEntitySimulator.*;
+
 import java.util.ArrayList;
-import java.util.function.Predicate;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.OtherClientPlayerEntity;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.boss.dragon.EnderDragonEntity;
+import net.minecraft.entity.mob.FlyingEntity;
 import net.minecraft.entity.mob.HoglinEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PiglinEntity;
 import net.minecraft.entity.mob.SlimeEntity;
 import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.Items;
 import net.zenxarch.bot.mixin.ProjectileEntityAccessor;
 
 public class TargetUtil {
-  private static final ArrayList<MobEntity> hostiles =
-      new ArrayList<MobEntity>();
-  private static final ArrayList<PassiveEntity> passives =
-      new ArrayList<PassiveEntity>();
-  private static final ArrayList<ProjectileEntity> projectiles =
-      new ArrayList<ProjectileEntity>();
-  private static final ArrayList<OtherClientPlayerEntity> players =
-      new ArrayList<OtherClientPlayerEntity>();
+  private static MobEntity hostileTarget;
+  private static MobEntity passiveTarget;
+  private static ProjectileEntity projectileTarget;
+
   private static final MinecraftClient mc = MinecraftClient.getInstance();
-  private static final EntityType[] __passiveTypes = {
-      EntityType.COD, EntityType.SALMON,  EntityType.COW,   EntityType.SHEEP,
-      EntityType.PIG, EntityType.CHICKEN, EntityType.RABBIT};
+  private static final ArrayList<EntityType> passiveTypes = new ArrayList<>() {
+    {
+      add(EntityType.COD);
+      add(EntityType.SALMON);
+      add(EntityType.COW);
+      add(EntityType.SHEEP);
+      add(EntityType.PIG);
+      add(EntityType.CHICKEN);
+      add(EntityType.RABBIT);
+    }
+  };
 
   private static ArrayList<String> playerUsernameStrings =
       new ArrayList<String>();
 
-  public static void handleEntityLoad(Entity e) {
-    if (e instanceof LivingEntity le) {
-      if (e == mc.player)
-        return;
-      handleLiving(le);
-    }
-    if (e instanceof ArrowEntity pe) {
-      projectiles.add(pe);
-    }
-  }
-
-  private static void handleLiving(LivingEntity e) {
-    if (e instanceof OtherClientPlayerEntity other)
-      players.add(other);
-    if (!(e instanceof MobEntity mob))
-      return;
-    if (e instanceof HostileEntity || e instanceof HoglinEntity ||
-        e instanceof SlimeEntity) {
-      hostiles.add(mob);
-    }
-    if (!(e instanceof PassiveEntity pe))
-      return;
-    for (int i = 0; i < __passiveTypes.length; i++) {
-      if (e.getType().equals(__passiveTypes[i])) {
-        passives.add(pe);
+  public static void updateTargets() {
+    hostileTarget = null;
+    passiveTarget = null;
+    projectileTarget = null;
+    double hostileDist = 4.1 * 4.1;
+    double passiveDist = 4.1 * 4.1;
+    double projectileDist = 16 * 16;
+    for (Entity e : mc.world.getEntities()) {
+      if (e == null || !e.isAlive())
+        continue;
+      if (e instanceof ProjectileEntity pe) {
+        projectileDist = handleProjectile(pe, projectileDist);
+        continue;
+      }
+      if (e instanceof MobEntity mob && !mob.isDead()) {
+        if (checkHostile(mob)) {
+          hostileDist = handleHostile(mob, hostileDist);
+        }
+        if (checkPassive(mob)) {
+          passiveDist = handlePassive(mob, passiveDist);
+        }
       }
     }
   }
 
-  public static void handleEntityUnload(Entity e) {
-    if (e instanceof MobEntity)
-      hostiles.remove(e);
-    if (e instanceof PassiveEntity)
-      passives.remove(e);
-    if (e instanceof ProjectileEntity)
-      projectiles.remove(e);
-    if (e instanceof OtherClientPlayerEntity)
-      players.remove(e);
-  }
-
-  public static MobEntity getNearestHostile() {
-    hostiles.removeIf(e -> e == null || !e.isAlive() || e.isDead());
-    return findNearest(hostiles, 4.0,
-                       e -> checkHostile(e), e -> mc.player.canSee(e));
-  }
-
-  public static PassiveEntity getNearestPassive() {
-    passives.removeIf(e -> e == null || !e.isAlive() || e.isDead());
-    return findNearest(passives, 4.0, e -> {
-      if (e instanceof AnimalEntity a) {
-        return !a.isBaby();
+  // TODO: check which one hits in less ticks
+  private static double handleProjectile(ProjectileEntity e, double d) {
+    if (e instanceof ArrowEntity arrow &&
+        !((ProjectileEntityAccessor)arrow).getInGround()) {
+      var dist = mc.player.squaredDistanceTo(e);
+      if (dist < d && wouldHitPlayer(arrow, 10)) {
+        projectileTarget = arrow;
+        return dist;
       }
-      return true;
-    }, e -> mc.player.canSee(e));
+    }
+    return d;
   }
+
+  private static double handleHostile(MobEntity e, double d) {
+    var dist = mc.player.squaredDistanceTo(e);
+    if (dist < d && checkVisibilty(e)) {
+      hostileTarget = e;
+      return dist;
+    }
+    return d;
+  }
+
+  private static double handlePassive(MobEntity e, double d) {
+    var dist = mc.player.squaredDistanceTo(e);
+    if (dist < d && checkVisibilty(e)) {
+      passiveTarget = e;
+      return dist;
+    }
+    return d;
+  }
+
+  public static MobEntity getNearestHostile() { return hostileTarget; }
+
+  public static MobEntity getNearestPassive() { return passiveTarget; }
 
   public static ProjectileEntity getNearestProjectile() {
-    // projectiles.removeIf(p -> p == null);
-    return findNearest(
-        projectiles, 12,
-        e
-        -> { return !(((ProjectileEntityAccessor)e).getInGround()); },
-        e -> {
-          if (!(e instanceof ArrowEntity arrow))
-            return false;
-          return ProjectileEntitySimulator.wouldHitPlayer(arrow, 10);
-        });
+    return projectileTarget;
+  }
+
+  public static ArrayList<String> getUsernames() {
+    return playerUsernameStrings;
   }
 
   public static void handleUsername(String s) {
@@ -113,20 +117,27 @@ public class TargetUtil {
     }
   }
 
-  public static OtherClientPlayerEntity getNearestEnemyPlayer() {
-    return findNearest(
-        players, 4 * 4,
-        e
-        -> { return playerUsernameStrings.contains(e.getEntityName()); },
-        e -> { return checkPlayer(e); });
+  public static AbstractClientPlayerEntity getNearestEnemyPlayer() {
+    AbstractClientPlayerEntity result = null;
+    var playerDistance = 4.1 * 4.1;
+    for (AbstractClientPlayerEntity p : mc.world.getPlayers()) {
+      if (!checkPlayer(p))
+        continue;
+      var dist = mc.player.squaredDistanceTo(p);
+      if (dist < playerDistance && checkVisibilty(p)) {
+        playerDistance = dist;
+        result = p;
+      }
+    }
+    return result;
   }
 
-  public static boolean checkPlayer(OtherClientPlayerEntity p) {
+  private static boolean checkPlayer(AbstractClientPlayerEntity p) {
+    if (p == null || !p.isAlive() || p.isDead())
+      return false;
     if (p.isSpectator() || p.isCreative())
       return false;
-    if (p.isUsingItem() && p.getOffHandStack().getItem().equals(Items.SHIELD))
-      return false;
-    return mc.player.canSee(p);
+    return playerUsernameStrings.contains(p.getEntityName());
   }
 
   private static boolean checkHostile(MobEntity e) {
@@ -136,27 +147,17 @@ public class TargetUtil {
       return false; */
     if (e instanceof PiglinEntity)
       return false;
-    return true;
+    return e instanceof EnderDragonEntity || e instanceof FlyingEntity ||
+        e instanceof SlimeEntity || e instanceof HostileEntity ||
+        e instanceof HoglinEntity;
   }
 
-  private static <T extends Entity> T findNearest(ArrayList<T> list,
-                                                  double maxD, Predicate<T> f,
-                                                  Predicate<T> s) {
-    // if(list.size() == 0) return null;
-    var m = maxD * maxD;
-    double d;
-    T t = null;
-    T e = null;
-    for (int i = 0; i < list.size(); i++) {
-      e = list.get(i);
-      if (!f.test(e))
-        continue;
-      d = mc.player.squaredDistanceTo(e);
-      if (d < m && s.test(e)) {
-        m = d;
-        t = e;
-      }
-    }
-    return t;
+  private static boolean checkPassive(MobEntity e) {
+    return passiveTypes.contains(e.getType()) &&
+        !(e instanceof AnimalEntity animal && animal.isBaby());
+  }
+
+  private static boolean checkVisibilty(LivingEntity e) {
+    return mc.player.canSee(e);
   }
 }

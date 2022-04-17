@@ -3,14 +3,10 @@ package net.zenxarch.bot;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.world.World;
 import net.zenxarch.bot.command.ZenCommandManager;
 import net.zenxarch.bot.process.CraftProcess;
-import net.zenxarch.bot.util.TargetUtil;
 import org.apache.logging.log4j.*;
 
 @Environment(EnvType.CLIENT)
@@ -32,9 +28,6 @@ public class ZenBot implements ClientModInitializer {
     LOGGER.info("ZenBot loaded have fun botting.");
     ZenCommandManager.registerCommands();
     LOGGER.info("registered commands");
-    ClientEntityEvents.ENTITY_LOAD.register((e, w) -> handleEntityLoad(e, w));
-    ClientEntityEvents.ENTITY_UNLOAD.register(
-        (e, w) -> handleEntityUnload(e, w));
     ClientTickEvents.START_CLIENT_TICK.register(mc -> handleTickStart(mc));
     ClientTickEvents.END_CLIENT_TICK.register(mc -> handleTickEnd(mc));
   }
@@ -52,14 +45,6 @@ public class ZenBot implements ClientModInitializer {
     if (KillAura.needsControl())
       return;
     CraftProcess.postTick();
-  }
-
-  private void handleEntityLoad(Entity e, World w) {
-    TargetUtil.handleEntityLoad(e);
-  }
-
-  private void handleEntityUnload(Entity e, World w) {
-    TargetUtil.handleEntityUnload(e);
   }
 
   public Logger getLogger() { return LOGGER; }

@@ -22,6 +22,7 @@ public final class KillAura {
   private static boolean shouldBlock;
 
   private static void updateTarget() {
+    TargetUtil.updateTargets();
     shouldBlock = true;
     target = TargetUtil.getNearestProjectile();
     if (target != null)
@@ -33,7 +34,7 @@ public final class KillAura {
     shouldBlock = false;
   }
 
-  public static void toggle() { isActive = !isActive; }
+  public static void setActive(boolean b) { isActive = b; }
 
   private static void pausePathing() {
     if (!wasPathing && BaritoneAPI.getProvider()
