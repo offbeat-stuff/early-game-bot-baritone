@@ -7,7 +7,6 @@ import net.minecraft.block.FireBlock;
 import net.minecraft.block.SoulFireBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -30,11 +29,8 @@ public class AutoFire {
     if (mc.player.getY() <
         (double)pos.getY() - mc.player.getEyeHeight(mc.player.getPose()))
       return;
-    var fluid = mc.world.getFluidState(pos).getFluid();
-
-    if (fluid != null && fluid != Fluids.EMPTY) {
+    if (!mc.world.getFluidState(pos).isEmpty())
       return;
-    }
 
     if (target.isOnFire())
       return;
@@ -55,6 +51,8 @@ public class AutoFire {
         var pos = new BlockPos(x, y, z);
         if (mc.player.squaredDistanceTo(x, y, z) > 4.1 * 4.1)
           continue;
+        if (mc.world.getFluidState(pos).isEmpty())
+          continue;
         if (canPlaceFireAt(pos)) {
           BlockPlacementUtils.tryPlaceAt(pos);
           return pos;
@@ -65,6 +63,8 @@ public class AutoFire {
   }
 
   private static boolean tryExtinguish() {
+    if (lastPos == null)
+      return false;
     var block = mc.world.getBlockState(lastPos).getBlock();
     if (block instanceof AbstractFireBlock) {
       mc.interactionManager.attackBlock(lastPos.down(), Direction.UP);
