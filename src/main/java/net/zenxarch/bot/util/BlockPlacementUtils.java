@@ -16,11 +16,11 @@ public class BlockPlacementUtils {
 
   public static boolean tryPlaceAt(BlockPos pos) {
     var vpos = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
-    var hit = praycast(vpos.add(0.5, -1.1, 0.5), FluidHandling.ANY);
+    var hit = praycast(vpos.add(0.5, -0.02, 0.5), FluidHandling.ANY);
     if (hit.getType() != HitResult.Type.BLOCK)
       return false;
     var bhit = (BlockHitResult)hit;
-    if (!bhit.getBlockPos().equals(pos.add(0, -1.1, 0)) ||
+    if (!bhit.getBlockPos().equals(pos.down()) ||
         !bhit.getSide().equals(Direction.UP))
       return false;
     var res = mc.interactionManager.interactBlock(mc.player, mc.world,
@@ -32,7 +32,7 @@ public class BlockPlacementUtils {
 
   public static boolean tryItemUseAt(BlockPos pos) {
     var vpos = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
-    var hit = praycast(vpos.add(0.5, -0.5, 0.5), FluidHandling.SOURCE_ONLY);
+    var hit = praycast(vpos.add(0.5, 0.5, 0.5), FluidHandling.SOURCE_ONLY);
     if (hit.getType() != HitResult.Type.BLOCK)
       return false;
     var bhit = (BlockHitResult)hit;
@@ -46,8 +46,7 @@ public class BlockPlacementUtils {
   }
 
   private static HitResult praycast(Vec3d v, FluidHandling f) {
-    var start = mc.player.getPos().add(
-        0, mc.player.getEyeHeight(mc.player.getPose()), 0);
+    var start = mc.player.getEyePos();
     return mc.world.raycast(
         new RaycastContext(start, v, ShapeType.COLLIDER, f, mc.player));
   }

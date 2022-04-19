@@ -9,6 +9,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
+import net.zenxarch.bot.defense.AutoFire;
 import net.zenxarch.bot.util.ClientPlayerHelper;
 import net.zenxarch.bot.util.TargetUtil;
 
@@ -25,6 +26,9 @@ public final class KillAura {
     TargetUtil.updateTargets();
     shouldBlock = true;
     target = TargetUtil.getNearestProjectile();
+    if (target != null)
+      return;
+    target = TargetUtil.getNearestEnemyPlayer();
     if (target != null)
       return;
     target = TargetUtil.getNearestHostile();
@@ -88,6 +92,9 @@ public final class KillAura {
     if (ClientPlayerHelper.lookingAt() != target) {
       ClientPlayerHelper.lookAt(target);
       ClientPlayerHelper.syncRotation();
+    }
+    if (target instanceof LivingEntity livingTarget) {
+      AutoFire.preTick(livingTarget);
     }
     if (handleCrit())
       attackTarget();
