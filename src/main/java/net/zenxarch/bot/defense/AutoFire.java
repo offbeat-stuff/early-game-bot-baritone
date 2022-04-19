@@ -24,10 +24,11 @@ public class AutoFire {
     lastPos = null;
 
     var target = KillAura.getTarget();
+    if (target == null)
+      return;
     var pos = target.getBlockPos();
 
-    if (mc.player.getY() <
-        (double)pos.getY() - mc.player.getEyeHeight(mc.player.getPose()))
+    if (mc.player.getEyeY() < target.getY())
       return;
     if (!mc.world.getFluidState(pos).isEmpty())
       return;
