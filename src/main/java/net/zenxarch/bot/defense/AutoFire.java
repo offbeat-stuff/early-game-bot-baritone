@@ -3,56 +3,83 @@ package net.zenxarch.bot.defense;
 import static net.zenxarch.bot.util.ClientPlayerHelper.*;
 
 import net.minecraft.block.AbstractFireBlock;
+import net.minecraft.block.FireBlock;
+import net.minecraft.block.SoulFireBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Direction.Axis;
+import net.zenxarch.bot.KillAura;
 import net.zenxarch.bot.util.BlockPlacementUtils;
-import net.zenxarch.bot.util.ClientPlayerHelper;
 
 public class AutoFire {
   private static final MinecraftClient mc = MinecraftClient.getInstance();
+  private static BlockPos lastPos = null;
 
-  public static void preTick(LivingEntity target) {
+  public static void preTick() {
+    if (tryExtinguish())
+      return;
+    lastPos = null;
+
+    var target = KillAura.getTarget();
     var pos = target.getBlockPos();
+
     if (mc.player.getY() <
         (double)pos.getY() - mc.player.getEyeHeight(mc.player.getPose()))
       return;
-
-    var blockState = mc.world.getBlockState(pos);
     var fluid = mc.world.getFluidState(pos).getFluid();
 
     if (fluid != null && fluid != Fluids.EMPTY) {
-      if (fluid == Fluids.LAVA) {
-        if (ClientPlayerHelper.pickItem(Items.BUCKET))
-          BlockPlacementUtils.tryItemUseAt(pos);
-      }
-      return;
-    }
-
-    var block = blockState.getBlock();
-
-    // TODO: Check if the upside is visible
-    if (block instanceof AbstractFireBlock) {
-      mc.interactionManager.attackBlock(pos, Direction.UP);
       return;
     }
 
     if (target.isOnFire())
       return;
+    if (target instanceof LivingEntity le)
+      lastPos = tryFlintAndSteel(le);
+  }
 
-    if (pickItem(Items.FLINT_AND_STEEL) && canPlaceFireAt(pos))
-      if (BlockPlacementUtils.tryPlaceAt(pos))
-        return;
-    if (pickItem(Items.LAVA_BUCKET) && blockState.canBucketPlace(Fluids.LAVA))
-      BlockPlacementUtils.tryPlaceAt(pos);
+  private static BlockPos tryFlintAndSteel(LivingEntity target) {
+    if (!pickItem(Items.FLINT_AND_STEEL))
+      return null;
+    var minx = target.getBoundingBox().getMax(Axis.X);
+    var minz = target.getBoundingBox().getMin(Axis.Z);
+    var maxx = target.getBoundingBox().getMax(Axis.X);
+    var maxz = target.getBoundingBox().getMax(Axis.Z);
+    var y = target.getBlockY();
+    for (int x = (int)minx; x <= (int)maxx; x++) {
+      for (int z = (int)minz; z <= (int)maxz; z++) {
+        var pos = new BlockPos(x, y, z);
+        if (mc.player.squaredDistanceTo(x, y, z) > 4.1 * 4.1)
+          continue;
+        if (canPlaceFireAt(pos)) {
+          BlockPlacementUtils.tryPlaceAt(pos);
+          return pos;
+        }
+      }
+    }
+    return null;
+  }
+
+  private static boolean tryExtinguish() {
+    var block = mc.world.getBlockState(lastPos).getBlock();
+    if (block instanceof AbstractFireBlock) {
+      mc.interactionManager.attackBlock(lastPos.down(), Direction.UP);
+      return true;
+    }
+    return false;
   }
 
   private static boolean canPlaceFireAt(BlockPos pos) {
-    return pos != null &&
-        mc.world.getBlockState(pos).getMaterial().isReplaceable() &&
-        AbstractFireBlock.getState(mc.world, pos).canPlaceAt(mc.world, pos);
+    if (pos == null ||
+        !mc.world.getBlockState(pos).getMaterial().isReplaceable())
+      return false;
+    var down = mc.world.getBlockState(pos.down());
+    if (SoulFireBlock.isSoulBase(down))
+      return true;
+    return FireBlock.canPlaceAt(mc.world, pos, Direction.UP);
   }
 }

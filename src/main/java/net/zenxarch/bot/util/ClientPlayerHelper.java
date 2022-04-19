@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.util.Hand;
 // import
 // net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.util.hit.EntityHitResult;
@@ -77,5 +78,16 @@ public class ClientPlayerHelper {
       return false;
     pickItemSlot(slot);
     return true;
+  }
+
+  public static int getRemainingAttackCooldownTicks() {
+    float remainingProgress = 1.0f - mc.player.getAttackCooldownProgress(0.0f);
+    return (int)(remainingProgress /
+                 mc.player.getAttackCooldownProgressPerTick());
+  }
+
+  public static void hitEntity(Entity e) {
+    mc.interactionManager.attackEntity(mc.player, e);
+    mc.player.swingHand(Hand.MAIN_HAND);
   }
 }

@@ -6,6 +6,7 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.zenxarch.bot.command.ZenCommandManager;
+import net.zenxarch.bot.defense.AutoFire;
 import net.zenxarch.bot.process.CraftProcess;
 import org.apache.logging.log4j.*;
 
@@ -36,6 +37,7 @@ public class ZenBot implements ClientModInitializer {
     if (mc.world == null)
       return;
     KillAura.onTick();
+    AutoFire.preTick();
     CraftProcess.preTick();
   }
 

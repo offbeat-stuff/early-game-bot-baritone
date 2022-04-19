@@ -1,6 +1,7 @@
 package net.zenxarch.bot;
 
-import baritone.api.BaritoneAPI;
+import static net.zenxarch.bot.util.BaritoneUtils.*;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -8,8 +9,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.util.Hand;
-import net.zenxarch.bot.defense.AutoFire;
 import net.zenxarch.bot.util.ClientPlayerHelper;
 import net.zenxarch.bot.util.TargetUtil;
 
@@ -18,7 +17,6 @@ public final class KillAura {
   private static final MinecraftClient mc = MinecraftClient.getInstance();
   private static boolean isActive;
   private static boolean wasBlocking;
-  private static boolean wasPathing;
   private static Entity target;
   private static boolean shouldBlock;
 
@@ -40,32 +38,6 @@ public final class KillAura {
 
   public static void setActive(boolean b) { isActive = b; }
 
-  private static void pausePathing() {
-    if (!wasPathing && BaritoneAPI.getProvider()
-                           .getPrimaryBaritone()
-                           .getPathingBehavior()
-                           .isPathing()) {
-      wasPathing = true;
-      BaritoneAPI.getProvider()
-          .getPrimaryBaritone()
-          .getCommandManager()
-          .execute("pause");
-    }
-  }
-
-  private static void resumePathing() {
-    if (wasPathing && BaritoneAPI.getProvider()
-                          .getPrimaryBaritone()
-                          .getPathingBehavior()
-                          .isPathing()) {
-      BaritoneAPI.getProvider()
-          .getPrimaryBaritone()
-          .getCommandManager()
-          .execute("resume");
-      wasPathing = false;
-    }
-  }
-
   public static boolean needsControl() {
     if (target == null) {
       unblockShield();
@@ -75,9 +47,11 @@ public final class KillAura {
     return true;
   }
 
+  public static Entity getTarget() { return target; }
+
   public static void onTick() {
+    target = null;
     if (!isActive) {
-      target = null;
       return;
     }
     p = mc.player;
@@ -93,9 +67,6 @@ public final class KillAura {
       ClientPlayerHelper.lookAt(target);
       ClientPlayerHelper.syncRotation();
     }
-    if (target instanceof LivingEntity livingTarget) {
-      AutoFire.preTick(livingTarget);
-    }
     if (handleCrit())
       attackTarget();
     if (shouldBlock)
@@ -108,20 +79,21 @@ public final class KillAura {
     if (!(target instanceof LivingEntity))
       return false;
     var canCrit = !(p.isSubmergedInWater() || p.isClimbing() || p.isInLava());
+    var remainingTicks = ClientPlayerHelper.getRemainingAttackCooldownTicks();
     if (canCrit) {
-      if (p.isOnGround() && target.getY() >= p.getY() - 1) {
+      if (p.isOnGround() && target.getY() >= p.getY() - 1 &&
+          remainingTicks < 5) {
         p.jump();
         return false;
       } else if (p.getVelocity().y > 0)
         return false;
     }
-    return p.getAttackCooldownProgress(0.0f) >= 1.0;
+    return remainingTicks == 0;
   }
 
   private static void attackTarget() {
     switchItem();
-    mc.interactionManager.attackEntity(mc.player, target);
-    p.swingHand(Hand.MAIN_HAND);
+    ClientPlayerHelper.hitEntity(target);
   }
 
   private static void blockShield() {
