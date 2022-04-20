@@ -47,20 +47,28 @@ public class AutoFire {
     var maxx = target.getBoundingBox().getMax(Axis.X);
     var maxz = target.getBoundingBox().getMax(Axis.Z);
     var y = target.getBlockY();
+
+    var bestDist = 4.1 * 4.1;
+    BlockPos bestPos = null;
+
     for (int x = (int)minx; x <= (int)maxx; x++) {
       for (int z = (int)minz; z <= (int)maxz; z++) {
+        var dist = mc.player.squaredDistanceTo(x, y, z);
         var pos = new BlockPos(x, y, z);
-        if (mc.player.squaredDistanceTo(x, y, z) > 4.1 * 4.1)
+        if (dist > bestDist)
           continue;
         if (mc.world.getFluidState(pos).isEmpty())
           continue;
         if (canPlaceFireAt(pos)) {
-          BlockPlacementUtils.tryPlaceAt(pos);
-          return pos;
+          bestDist = dist;
+          bestPos = pos;
         }
       }
     }
-    return null;
+    if (bestPos != null) {
+      BlockPlacementUtils.tryPlaceAt(bestPos);
+    }
+    return bestPos;
   }
 
   private static boolean tryExtinguish() {
