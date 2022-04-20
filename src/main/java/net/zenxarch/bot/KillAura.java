@@ -2,6 +2,7 @@ package net.zenxarch.bot;
 
 import static net.zenxarch.bot.util.BaritoneUtils.*;
 
+import java.util.ArrayList;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -110,14 +111,24 @@ public final class KillAura {
     wasBlocking = false;
   }
 
+  private static final ArrayList<Item> weapons = new ArrayList<Item>() {
+    {
+      add(Items.NETHERITE_AXE);
+      add(Items.NETHERITE_SWORD);
+      add(Items.DIAMOND_AXE);
+      add(Items.DIAMOND_SWORD);
+      add(Items.IRON_AXE);
+      add(Items.IRON_SWORD);
+      add(Items.STONE_AXE);
+      add(Items.STONE_SWORD);
+      add(Items.WOODEN_AXE);
+      add(Items.WOODEN_SWORD);
+    }
+  };
+
   private static void switchItem() {
-    var items = new Item[] {Items.NETHERITE_AXE, Items.NETHERITE_SWORD,
-                            Items.DIAMOND_AXE,   Items.DIAMOND_SWORD,
-                            Items.IRON_AXE,      Items.IRON_SWORD,
-                            Items.STONE_AXE,     Items.STONE_SWORD,
-                            Items.WOODEN_AXE,    Items.WOODEN_SWORD};
-    for (int i = 0; i < items.length; i++) {
-      if (ClientPlayerHelper.pickItem(items[i]))
+    for (Item weapon : weapons) {
+      if (ClientPlayerHelper.pickItem(weapon))
         return;
     }
   }
