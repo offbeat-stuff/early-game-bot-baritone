@@ -37,7 +37,7 @@ public final class KillAura {
     shouldBlock = false;
   }
 
-  public static void setActive(boolean b) { isActive = b; }
+  public static void setActive(boolean active) { isActive = active; }
 
   public static boolean needsControl() {
     if (target == null) {
@@ -52,22 +52,28 @@ public final class KillAura {
 
   public static void onTick() {
     target = null;
-    if (!isActive) {
-      return;
-    }
     p = mc.player;
-    if (p == null || p.isDead() || p.isSpectator() || p.isSleeping())
+    if (!isActive || p == null || p.isDead() || p.isSpectator() ||
+        p.isSleeping())
       return;
+
     updateTarget();
     if (target == null)
       return;
+
     pausePathing();
-    if (mc.currentScreen != null && mc.currentScreen instanceof HandledScreen)
-      p.closeHandledScreen();
+
+    if (mc.currentScreen != null) {
+      if (mc.currentScreen instanceof HandledScreen)
+        p.closeHandledScreen();
+      else
+        return;
+    }
     if (ClientPlayerHelper.lookingAt() != target) {
       ClientPlayerHelper.lookAt(target);
       ClientPlayerHelper.syncRotation();
     }
+
     if (handleCrit())
       attackTarget();
     if (shouldBlock)
@@ -82,9 +88,9 @@ public final class KillAura {
     var canCrit = !(p.isSubmergedInWater() || p.isClimbing() || p.isInLava());
     var remainingTicks = ClientPlayerHelper.getRemainingAttackCooldownTicks();
     if (canCrit) {
-      if (p.isOnGround() && target.getY() >= p.getY() - 1 &&
-          remainingTicks < 5) {
-        p.jump();
+      if (p.isOnGround() && target.getY() >= p.getY() - 1) {
+        if (remainingTicks < 5)
+          p.jump();
         return false;
       } else if (p.getVelocity().y > 0)
         return false;
