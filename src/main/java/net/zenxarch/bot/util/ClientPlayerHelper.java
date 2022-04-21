@@ -82,8 +82,10 @@ public class ClientPlayerHelper {
 
   public static int getRemainingAttackCooldownTicks() {
     float remainingProgress = 1.0f - mc.player.getAttackCooldownProgress(0.0f);
-    return (int)(remainingProgress /
-                 mc.player.getAttackCooldownProgressPerTick());
+    var perTick = mc.player.getAttackCooldownProgressPerTick();
+    if (remainingProgress == 0.0f || perTick == 0.0f)
+      return 0;
+    return (int)(remainingProgress / perTick);
   }
 
   public static void hitEntity(Entity e) {

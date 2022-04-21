@@ -92,14 +92,15 @@ public final class KillAura {
     var canCrit = !(p.isSubmergedInWater() || p.isClimbing() || p.isInLava());
     var remainingTicks = ClientPlayerHelper.getRemainingAttackCooldownTicks();
     if (canCrit) {
-      if (p.isOnGround() && target.getY() >= p.getY() - 1) {
+      if (p.isOnGround() &&
+          target.squaredDistanceTo(p.getPos().add(0, 1, 0)) < 4.5 * 4.5) {
         if (remainingTicks < 5)
           p.jump();
         return false;
       } else if (p.getVelocity().y > 0)
         return false;
     }
-    return remainingTicks == 0;
+    return remainingTicks <= 0;
   }
 
   private static void attackTarget() {

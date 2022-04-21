@@ -8,7 +8,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Direction.Axis;
+// import net.minecraft.util.math.Direction.Axis;
+// import net.minecraft.util.math.MathHelper;
 import net.zenxarch.bot.KillAura;
 import net.zenxarch.bot.util.BlockPlacementUtils;
 
@@ -34,17 +35,17 @@ public class AutoFire {
       return;
 
     if (target instanceof LivingEntity le)
-      lastPos = tryFlintAndSteel(le);
+      lastPos = simpleFlintAndSteel(le);
   }
 
-  private static BlockPos tryFlintAndSteel(LivingEntity target) {
+  /* private static BlockPos tryFlintAndSteel(LivingEntity target) {
     var slot = findInInventory(Items.FLINT_AND_STEEL);
     if (slot == -1)
       return null;
-    var minx = target.getBoundingBox().getMax(Axis.X);
-    var minz = target.getBoundingBox().getMin(Axis.Z);
-    var maxx = target.getBoundingBox().getMax(Axis.X);
-    var maxz = target.getBoundingBox().getMax(Axis.Z);
+    var minx = MathHelper.floor(target.getBoundingBox().getMin(Axis.X));
+    var minz = MathHelper.floor(target.getBoundingBox().getMin(Axis.Z));
+    var maxx = MathHelper.ceil(target.getBoundingBox().getMax(Axis.X));
+    var maxz = MathHelper.ceil(target.getBoundingBox().getMax(Axis.Z));
     var y = target.getBlockY();
 
     var bestDist = 4.1 * 4.1;
@@ -70,21 +71,31 @@ public class AutoFire {
     }
     return bestPos;
   }
+  */
+
+  private static BlockPos simpleFlintAndSteel(LivingEntity target) {
+    if (!pickItem(Items.FLINT_AND_STEEL))
+      return null;
+    var pos = target.getBlockPos();
+    BlockPlacementUtils.tryPlaceAt(pos);
+    return pos;
+  }
 
   private static boolean tryExtinguish() {
     if (lastPos == null)
       return false;
     var block = mc.world.getBlockState(lastPos).getBlock();
     if (block instanceof AbstractFireBlock) {
-      mc.interactionManager.attackBlock(lastPos.down(), Direction.UP);
+      mc.interactionManager.attackBlock(lastPos, Direction.UP);
       return true;
     }
     return false;
   }
-
+  /*
   private static boolean canPlaceFireAt(BlockPos pos) {
     return pos != null &&
         mc.world.getBlockState(pos).getMaterial().isReplaceable() &&
         AbstractFireBlock.getState(mc.world, pos).canPlaceAt(mc.world, pos);
   }
+  */
 }
