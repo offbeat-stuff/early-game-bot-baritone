@@ -20,6 +20,7 @@ public final class KillAura {
   private static boolean wasBlocking;
   private static Entity target;
   private static boolean shouldBlock;
+  private static boolean hasAttacked;
 
   private static void updateTarget() {
     TargetUtil.updateTargets();
@@ -38,14 +39,15 @@ public final class KillAura {
   }
 
   public static void setActive(boolean active) { isActive = active; }
+  public static boolean getAttacked() { return hasAttacked; }
 
   public static boolean needsControl() {
     if (target == null) {
       unblockShield();
       resumePathing();
-      return false;
     }
-    return true;
+    hasAttacked = false;
+    return target != null;
   }
 
   public static Entity getTarget() { return target; }
@@ -74,8 +76,10 @@ public final class KillAura {
       ClientPlayerHelper.syncRotation();
     }
 
-    if (handleCrit())
+    if (handleCrit()) {
+      hasAttacked = true;
       attackTarget();
+    }
     if (shouldBlock)
       blockShield();
     else

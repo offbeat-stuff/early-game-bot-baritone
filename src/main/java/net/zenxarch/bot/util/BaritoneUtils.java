@@ -23,7 +23,7 @@ public class BaritoneUtils {
   }
 
   public static void resumePathing() {
-    if (wasPathing && getPrimaryBaritone().getPathingBehavior().isPathing()) {
+    if (wasPathing && !getPrimaryBaritone().getPathingBehavior().isPathing()) {
       execute("resume");
       wasPathing = false;
     }

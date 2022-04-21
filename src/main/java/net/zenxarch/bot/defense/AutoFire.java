@@ -3,6 +3,7 @@ package net.zenxarch.bot.defense;
 import static net.zenxarch.bot.util.ClientPlayerHelper.*;
 
 import net.minecraft.block.AbstractFireBlock;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.FireBlock;
 import net.minecraft.block.SoulFireBlock;
 import net.minecraft.client.MinecraftClient;
@@ -19,28 +20,29 @@ public class AutoFire {
   private static BlockPos lastPos = null;
 
   public static void preTick() {
-    if (tryExtinguish())
+    if (KillAura.getAttacked() || tryExtinguish())
       return;
     lastPos = null;
 
     var target = KillAura.getTarget();
     if (target == null)
       return;
-    var pos = target.getBlockPos();
 
-    if (mc.player.getEyeY() < target.getY())
-      return;
-    if (!mc.world.getFluidState(pos).isEmpty())
+    var fluid = mc.world.getFluidState(target.getBlockPos());
+
+    if (mc.player.getEyeY() < target.getY() || !fluid.isEmpty())
       return;
 
     if (target.isOnFire())
       return;
+
     if (target instanceof LivingEntity le)
       lastPos = tryFlintAndSteel(le);
   }
 
   private static BlockPos tryFlintAndSteel(LivingEntity target) {
-    if (!pickItem(Items.FLINT_AND_STEEL))
+    var slot = findInInventory(Items.FLINT_AND_STEEL);
+    if (slot == -1)
       return null;
     var minx = target.getBoundingBox().getMax(Axis.X);
     var minz = target.getBoundingBox().getMin(Axis.Z);
@@ -66,6 +68,7 @@ public class AutoFire {
       }
     }
     if (bestPos != null) {
+      pickItemSlot(slot);
       BlockPlacementUtils.tryPlaceAt(bestPos);
     }
     return bestPos;
@@ -89,6 +92,7 @@ public class AutoFire {
     var down = mc.world.getBlockState(pos.down());
     if (SoulFireBlock.isSoulBase(down))
       return true;
-    return FireBlock.canPlaceAt(mc.world, pos, Direction.UP);
+    return ((FireBlock)Blocks.FIRE)
+        .canPlaceAt(mc.world.getBlockState(pos), mc.world, pos);
   }
 }
