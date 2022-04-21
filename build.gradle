@@ -10,6 +10,12 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
+    maven {
+        url 'https://maven.xpple.dev/maven2'
+    }
+}
+
+repositories {
 	flatDir { dirs 'libs'}
 }
 
@@ -20,6 +26,7 @@ dependencies {
 
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	modImplementation "baritone-api-fabric:baritone-api-fabric:${project.baritone_version}"
+	modImplementation "dev.xpple:clientarguments:${project.clientarguments_version}"
 }
 
 processResources {

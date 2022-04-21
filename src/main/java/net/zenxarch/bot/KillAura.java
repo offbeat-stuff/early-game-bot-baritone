@@ -15,7 +15,7 @@ import net.zenxarch.bot.util.TargetUtil;
 
 public final class KillAura {
   private static ClientPlayerEntity p;
-  private static final MinecraftClient mc = MinecraftClient.getInstance();
+  public static final MinecraftClient mc = MinecraftClient.getInstance();
   private static boolean isActive;
   private static boolean wasBlocking;
   private static Entity target;

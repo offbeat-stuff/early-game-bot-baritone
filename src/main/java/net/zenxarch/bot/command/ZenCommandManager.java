@@ -7,5 +7,6 @@ public class ZenCommandManager {
     CraftCommand.register(ClientCommandManager.DISPATCHER);
     PortalCommand.register(ClientCommandManager.DISPATCHER);
     KillAuraCommand.register(ClientCommandManager.DISPATCHER);
+    MineCommand.register(ClientCommandManager.DISPATCHER);
   }
 }
