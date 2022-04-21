@@ -3,9 +3,6 @@ package net.zenxarch.bot.defense;
 import static net.zenxarch.bot.util.ClientPlayerHelper.*;
 
 import net.minecraft.block.AbstractFireBlock;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.FireBlock;
-import net.minecraft.block.SoulFireBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Items;
@@ -86,13 +83,8 @@ public class AutoFire {
   }
 
   private static boolean canPlaceFireAt(BlockPos pos) {
-    if (pos == null ||
-        !mc.world.getBlockState(pos).getMaterial().isReplaceable())
-      return false;
-    var down = mc.world.getBlockState(pos.down());
-    if (SoulFireBlock.isSoulBase(down))
-      return true;
-    return ((FireBlock)Blocks.FIRE)
-        .canPlaceAt(mc.world.getBlockState(pos), mc.world, pos);
+    return pos != null &&
+        mc.world.getBlockState(pos).getMaterial().isReplaceable() &&
+        AbstractFireBlock.getState(mc.world, pos).canPlaceAt(mc.world, pos);
   }
 }
