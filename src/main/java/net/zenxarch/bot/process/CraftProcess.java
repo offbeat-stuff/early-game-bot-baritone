@@ -61,11 +61,15 @@ public final class CraftProcess {
 
   private static void craft() {
     var r = craftingQueue.get(0);
+    if (checkMaxCraftable(r.getLeft()) == 0) {
+      return;
+    }
     var cs = (CraftingScreen)mc.currentScreen;
     var csh = cs.getScreenHandler();
     var im = mc.interactionManager;
     var os = csh.getCraftingResultSlotIndex();
-    if (csh.getSlot(os).getStack().equals(r.getLeft().getOutput())) {
+    if (csh.getSlot(os).getStack().getItem() ==
+        r.getLeft().getOutput().getItem()) {
       im.clickSlot(csh.syncId, os, 0, SlotActionType.QUICK_MOVE, mc.player);
       r.setRight(r.getRight() - 1);
       if (r.getRight() == 0) {
