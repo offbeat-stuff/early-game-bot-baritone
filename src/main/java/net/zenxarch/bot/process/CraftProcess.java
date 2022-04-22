@@ -54,9 +54,10 @@ public final class CraftProcess {
       }
     }
     for (var e : sr.entrySet()) {
-      itemAvail.put(e.getKey(), itemAvail.get(e.getKey()) / e.getValue());
+      itemAvail.put(e.getKey(),
+                    itemAvail.getOrDefault(e.getKey(), 0) / e.getValue());
     }
-    return itemAvail.values().stream().min(Integer::compare).get();
+    return itemAvail.values().stream().min(Integer::compare).orElse(0);
   }
 
   private static void craft() {

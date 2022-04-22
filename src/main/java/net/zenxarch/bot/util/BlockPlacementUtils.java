@@ -15,8 +15,8 @@ public class BlockPlacementUtils {
   private static final MinecraftClient mc = MinecraftClient.getInstance();
 
   public static boolean tryPlaceAt(BlockPos pos) {
-    if (!mc.world.getBlockState(pos).isSideSolidFullSquare(mc.world, pos,
-                                                           Direction.UP))
+    if (!mc.world.getBlockState(pos.down())
+             .isSideSolidFullSquare(mc.world, pos, Direction.UP))
       return false;
     var vpos = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
     var hit = praycast(vpos.add(0.5, -0.02, 0.5), FluidHandling.ANY);
