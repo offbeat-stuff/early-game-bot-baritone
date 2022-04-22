@@ -15,16 +15,25 @@ public class BlockPlacementUtils {
   private static final MinecraftClient mc = MinecraftClient.getInstance();
 
   public static boolean tryPlaceAt(BlockPos pos) {
+    if (!mc.world.getBlockState(pos).isSideSolidFullSquare(mc.world, pos,
+                                                           Direction.UP))
+      return false;
     var vpos = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
     var hit = praycast(vpos.add(0.5, -0.02, 0.5), FluidHandling.ANY);
     if (hit.getType() != HitResult.Type.BLOCK)
       return false;
     var bhit = (BlockHitResult)hit;
-    if (!bhit.getBlockPos().equals(pos.down()) ||
-        !bhit.getSide().equals(Direction.UP))
-      return false;
+    if (bhit.getBlockPos() == pos &&
+        mc.world.getBlockState(pos).getMaterial().isReplaceable())
+      return rightClickBlock(bhit);
+    if (bhit.getBlockPos() == pos.down() && bhit.getSide() == Direction.UP)
+      return rightClickBlock(bhit);
+    return false;
+  }
+
+  private static boolean rightClickBlock(BlockHitResult h) {
     var res = mc.interactionManager.interactBlock(mc.player, mc.world,
-                                                  Hand.MAIN_HAND, bhit);
+                                                  Hand.MAIN_HAND, h);
     if (res.shouldSwingHand())
       mc.player.swingHand(Hand.MAIN_HAND);
     return res.isAccepted();
@@ -38,11 +47,7 @@ public class BlockPlacementUtils {
     var bhit = (BlockHitResult)hit;
     if (bhit.getBlockPos() != pos)
       return false;
-    var res = mc.interactionManager.interactBlock(mc.player, mc.world,
-                                                  Hand.MAIN_HAND, bhit);
-    if (res.shouldSwingHand())
-      mc.player.swingHand(Hand.MAIN_HAND);
-    return res.isAccepted();
+    return rightClickBlock(bhit);
   }
 
   private static HitResult praycast(Vec3d v, FluidHandling f) {
