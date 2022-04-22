@@ -93,7 +93,7 @@ public final class KillAura {
     var remainingTicks = ClientPlayerHelper.getRemainingAttackCooldownTicks();
     if (canCrit) {
       if (p.isOnGround() &&
-          target.squaredDistanceTo(p.getPos().add(0, 1, 0)) < 4.5 * 4.5) {
+          target.squaredDistanceTo(p.getPos().add(0, 2, 0)) < 4.5 * 4.5) {
         if (remainingTicks < 5)
           p.jump();
         return false;

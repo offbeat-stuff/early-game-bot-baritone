@@ -18,6 +18,10 @@ import net.minecraft.entity.mob.SlimeEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.util.hit.HitResult;
+import net.minecraft.world.RaycastContext;
+import net.minecraft.world.RaycastContext.FluidHandling;
+import net.minecraft.world.RaycastContext.ShapeType;
 import net.zenxarch.bot.mixin.ProjectileEntityAccessor;
 
 public class TargetUtil {
@@ -45,8 +49,8 @@ public class TargetUtil {
     hostileTarget = null;
     passiveTarget = null;
     projectileTarget = null;
-    double hostileDist = 4.1 * 4.1;
-    double passiveDist = 4.1 * 4.1;
+    double hostileDist = 4.5 * 4.5;
+    double passiveDist = 4.5 * 4.5;
     int projectileTicks = 16;
     for (Entity e : mc.world.getEntities()) {
       if (e == null || !e.isAlive())
@@ -79,7 +83,7 @@ public class TargetUtil {
   }
 
   private static double handleHostile(MobEntity e, double d) {
-    var dist = mc.player.squaredDistanceTo(e);
+    var dist = checkSquaredDistanceTo(e);
     if (dist < d && checkVisibilty(e)) {
       hostileTarget = e;
       return dist;
@@ -88,7 +92,7 @@ public class TargetUtil {
   }
 
   private static double handlePassive(MobEntity e, double d) {
-    var dist = mc.player.squaredDistanceTo(e);
+    var dist = checkSquaredDistanceTo(e);
     if (dist < d && checkVisibilty(e)) {
       passiveTarget = e;
       return dist;
@@ -122,7 +126,7 @@ public class TargetUtil {
     for (AbstractClientPlayerEntity p : mc.world.getPlayers()) {
       if (!checkPlayer(p))
         continue;
-      var dist = mc.player.squaredDistanceTo(p);
+      var dist = checkSquaredDistanceTo(p);
       if (dist < playerDistance && checkVisibilty(p)) {
         playerDistance = dist;
         result = p;
@@ -156,7 +160,16 @@ public class TargetUtil {
         !(e instanceof AnimalEntity animal && animal.isBaby());
   }
 
+  private static double checkSquaredDistanceTo(Entity e) {
+    return e.squaredDistanceTo(mc.player.getEyePos());
+  }
+
   private static boolean checkVisibilty(LivingEntity e) {
-    return mc.player.canSee(e);
+    var start = mc.player.getEyePos();
+    var end = e.getPos();
+    return mc.world
+               .raycast(new RaycastContext(start, end, ShapeType.COLLIDER,
+                                           FluidHandling.NONE, mc.player))
+               .getType() == HitResult.Type.MISS;
   }
 }
