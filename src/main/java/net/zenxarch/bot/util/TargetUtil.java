@@ -9,11 +9,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
+import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.mob.FlyingEntity;
 import net.minecraft.entity.mob.HoglinEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.PiglinEntity;
+import net.minecraft.entity.mob.PhantomEntity;
 import net.minecraft.entity.mob.SlimeEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
@@ -144,11 +145,9 @@ public class TargetUtil {
   }
 
   private static boolean checkHostile(MobEntity e) {
-    /* if (e instanceof EndermanEntity eman && !eman.isAngry())
+    if (e instanceof EndermanEntity eman && !eman.isAngry())
       return false;
-    if (e.isAttacking() && !(e instanceof PhantomEntity))
-      return false; */
-    if (e instanceof PiglinEntity)
+    if (!e.isAttacking() && !(e instanceof PhantomEntity))
       return false;
     return e instanceof EnderDragonEntity || e instanceof FlyingEntity ||
         e instanceof SlimeEntity || e instanceof HostileEntity ||
