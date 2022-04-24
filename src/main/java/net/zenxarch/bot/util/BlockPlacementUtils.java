@@ -1,5 +1,6 @@
 package net.zenxarch.bot.util;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -23,10 +24,11 @@ public class BlockPlacementUtils {
     if (hit.getType() != HitResult.Type.BLOCK)
       return false;
     var bhit = (BlockHitResult)hit;
-    if (bhit.getBlockPos() == pos &&
-        mc.world.getBlockState(pos).getMaterial().isReplaceable())
-      return rightClickBlock(bhit);
+    BlockState state = mc.world.getBlockState(pos);
     if (bhit.getBlockPos() == pos.down() && bhit.getSide() == Direction.UP)
+      return rightClickBlock(bhit);
+    if (bhit.getBlockPos() == pos && !state.isAir() &&
+        state.getMaterial().isReplaceable())
       return rightClickBlock(bhit);
     return false;
   }
