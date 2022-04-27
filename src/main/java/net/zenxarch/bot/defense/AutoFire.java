@@ -1,41 +1,55 @@
 package net.zenxarch.bot.defense;
 
+import static net.zenxarch.bot.ZenBot.mc;
 import static net.zenxarch.bot.util.ClientPlayerHelper.*;
 
 import net.minecraft.block.AbstractFireBlock;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-// import net.minecraft.util.math.Direction.Axis;
-// import net.minecraft.util.math.MathHelper;
-import net.zenxarch.bot.KillAura;
 import net.zenxarch.bot.util.BlockPlacementUtils;
 
-public class AutoFire {
-  private static final MinecraftClient mc = MinecraftClient.getInstance();
-  private static BlockPos lastPos = null;
+public class AutoFire extends EntityDefenseModule {
+  private BlockPos lastPos = null;
 
-  public static void preTick() {
-    if (KillAura.getAttacked() || tryExtinguish())
+  @Override
+  public void handleNone() {
+    tryExtinguish();
+  }
+
+  @Override
+  public void handleHostile(MobEntity me) {
+    handleTarget(me);
+  }
+
+  @Override
+  public void handlePlayer(AbstractClientPlayerEntity pe) {
+    handleTarget(pe);
+  }
+
+  @Override
+  public void handlePassive(MobEntity me) {
+    handleTarget(me);
+  }
+
+  private void handleTarget(LivingEntity target) {
+    if (tryExtinguish())
       return;
     lastPos = null;
 
-    var target = KillAura.getTarget();
     if (target == null)
       return;
 
     var fluid = mc.world.getFluidState(target.getBlockPos());
 
-    if (mc.player.getEyeY() < target.getY() || !fluid.isEmpty())
+    if (mc.player.getEyeY() < target.getY() || !fluid.isEmpty() ||
+        target.isOnFire())
       return;
 
-    if (target.isOnFire())
-      return;
-
-    if (target instanceof LivingEntity le)
-      lastPos = simpleFlintAndSteel(le);
+    lastPos = simpleFlintAndSteel(target);
   }
 
   /* private static BlockPos tryFlintAndSteel(LivingEntity target) {
@@ -73,7 +87,7 @@ public class AutoFire {
   }
   */
 
-  private static BlockPos simpleFlintAndSteel(LivingEntity target) {
+  private BlockPos simpleFlintAndSteel(LivingEntity target) {
     if (!pickItem(Items.FLINT_AND_STEEL))
       return null;
     var pos = target.getBlockPos();
@@ -81,7 +95,7 @@ public class AutoFire {
     return pos;
   }
 
-  private static boolean tryExtinguish() {
+  private boolean tryExtinguish() {
     if (lastPos == null)
       return false;
     var block = mc.world.getBlockState(lastPos).getBlock();

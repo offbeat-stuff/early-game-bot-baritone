@@ -27,12 +27,12 @@ public class ClientPlayerHelper {
     lookAt(e.getX(), e.getEyeY(), e.getZ());
   }
 
-  public static Entity lookingAt() {
+  public static boolean lookingAt(Entity target) {
     if (mc.crosshairTarget == null)
-      return null;
+      return false;
     if (mc.crosshairTarget.getType() == Type.ENTITY)
-      return ((EntityHitResult)mc.crosshairTarget).getEntity();
-    return null;
+      return ((EntityHitResult)mc.crosshairTarget).getEntity() == target;
+    return false;
   }
 
   public static void syncRotation() {

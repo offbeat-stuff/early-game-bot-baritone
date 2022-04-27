@@ -6,7 +6,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
 import net.minecraft.text.LiteralText;
-import net.zenxarch.bot.KillAura;
+import net.zenxarch.bot.defense.DefenseStateManager;
 import net.zenxarch.bot.util.TargetUtil;
 
 public class KillAuraCommand {
@@ -35,7 +35,7 @@ public class KillAuraCommand {
                 ctx.getSource().sendFeedback(
                     new LiteralText("KillAura deactivated;"));
               }
-              KillAura.setActive(active);
+              DefenseStateManager.setActiveStatus(active);
               return 0;
             }));
   }

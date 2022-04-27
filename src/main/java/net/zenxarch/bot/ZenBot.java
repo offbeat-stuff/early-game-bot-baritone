@@ -7,6 +7,8 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.zenxarch.bot.command.ZenCommandManager;
 import net.zenxarch.bot.defense.AutoFire;
+import net.zenxarch.bot.defense.DefenseStateManager;
+import net.zenxarch.bot.defense.KillAura;
 import net.zenxarch.bot.process.CraftProcess;
 import org.apache.logging.log4j.*;
 
@@ -17,6 +19,7 @@ public class ZenBot implements ClientModInitializer {
   // logger's name. That way, it's clear which mod wrote info,
   // warnings, and errors.
   public static final Logger LOGGER = LogManager.getLogger("zenbot");
+  public static final MinecraftClient mc = MinecraftClient.getInstance();
 
   private static ZenBot __instance;
 
@@ -36,15 +39,14 @@ public class ZenBot implements ClientModInitializer {
   private void handleTickStart(MinecraftClient mc) {
     if (mc.world == null)
       return;
-    KillAura.onTick();
-    AutoFire.preTick();
+    DefenseStateManager.preTick();
     CraftProcess.preTick();
   }
 
   private void handleTickEnd(MinecraftClient mc) {
     if (mc.world == null)
       return;
-    if (KillAura.needsControl())
+    if (DefenseStateManager.postTickCheck())
       return;
     CraftProcess.postTick();
   }

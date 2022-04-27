@@ -29,6 +29,7 @@ public class TargetUtil {
   private static MobEntity hostileTarget;
   private static MobEntity passiveTarget;
   private static ProjectileEntity projectileTarget;
+  private static AbstractClientPlayerEntity playerTarget;
 
   private static final MinecraftClient mc = MinecraftClient.getInstance();
   private static final ArrayList<EntityType> passiveTypes = new ArrayList<>() {
@@ -67,6 +68,18 @@ public class TargetUtil {
         if (checkPassive(mob)) {
           passiveDist = handlePassive(mob, passiveDist);
         }
+      }
+    }
+    // find nearest enemy player
+    playerTarget = null;
+    var playerDistance = 4.1 * 4.1;
+    for (AbstractClientPlayerEntity p : mc.world.getPlayers()) {
+      if (!checkPlayer(p))
+        continue;
+      var dist = checkSquaredDistanceTo(p);
+      if (dist < playerDistance && checkVisibilty(p)) {
+        playerDistance = dist;
+        playerTarget = p;
       }
     }
   }
@@ -122,18 +135,7 @@ public class TargetUtil {
   }
 
   public static AbstractClientPlayerEntity getNearestEnemyPlayer() {
-    AbstractClientPlayerEntity result = null;
-    var playerDistance = 4.1 * 4.1;
-    for (AbstractClientPlayerEntity p : mc.world.getPlayers()) {
-      if (!checkPlayer(p))
-        continue;
-      var dist = checkSquaredDistanceTo(p);
-      if (dist < playerDistance && checkVisibilty(p)) {
-        playerDistance = dist;
-        result = p;
-      }
-    }
-    return result;
+    return playerTarget;
   }
 
   private static boolean checkPlayer(AbstractClientPlayerEntity p) {
