@@ -3,12 +3,15 @@ package net.zenxarch.bot.util;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
+import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.util.Hand;
 // import
 // net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult.Type;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 
 public class ClientPlayerHelper {
   private static final MinecraftClient mc = MinecraftClient.getInstance();
@@ -48,8 +51,17 @@ public class ClientPlayerHelper {
     // UpdateSelectedSlotC2SPacket(p.getInventory().selectedSlot));
   }
 
+  private static void swapHands() {
+    mc.getNetworkHandler().sendPacket(new PlayerActionC2SPacket(
+        PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND, BlockPos.ORIGIN,
+        Direction.DOWN));
+  }
+
   public static void pickItemSlot(int slot) {
     var inv = mc.player.getInventory();
+    if (slot == inv.main.size()) {
+      swapHands();
+    }
     if (slot >= inv.main.size() || slot < 0)
       return;
     if (slot < 9) {
@@ -68,6 +80,9 @@ public class ClientPlayerHelper {
       if (inv.main.get(i).getItem().equals(item)) {
         return i;
       }
+    }
+    if (inv.offHand.get(0).getItem().equals(item)) {
+      return inv.main.size();
     }
     return -1;
   }

@@ -1,13 +1,9 @@
 package net.zenxarch.bot.defense;
 
 import static net.zenxarch.bot.ZenBot.mc;
-import static net.zenxarch.bot.util.ClientPlayerHelper.*;
 
 import java.util.ArrayList;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.Items;
-import net.zenxarch.bot.util.ClientPlayerHelper;
 import net.zenxarch.bot.util.TargetUtil;
 
 public class DefenseStateManager {
@@ -93,17 +89,11 @@ public class DefenseStateManager {
 
   public static boolean postTickCheck() { return isActionPerformed; }
 
-  public static void hitLiving(LivingEntity target) {
+  public static boolean canPerformAction() {
+    if (isActionPerformed)
+      return false;
     isActionPerformed = true;
-    if (pickItem(Items.NETHERITE_AXE) || pickItem(Items.NETHERITE_SWORD) ||
-        pickItem(Items.DIAMOND_AXE) || pickItem(Items.DIAMOND_SWORD) ||
-        pickItem(Items.IRON_AXE) || pickItem(Items.IRON_SWORD) ||
-        pickItem(Items.STONE_AXE) || pickItem(Items.STONE_SWORD) ||
-        pickItem(Items.WOODEN_AXE) || pickItem(Items.WOODEN_SWORD)) {
-    };
-    if (!lookingAt(target))
-      lookAt(target);
-    ClientPlayerHelper.hitEntity(target);
+    return true;
   }
 
   public static boolean tryHandleMcScreen() {
