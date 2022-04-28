@@ -90,6 +90,8 @@ public class AutoFire extends EntityDefenseModule {
   private BlockPos simpleFlintAndSteel(LivingEntity target) {
     if (!pickItem(Items.FLINT_AND_STEEL))
       return null;
+    if (!DefenseStateManager.canPerformAction())
+      return null;
     var pos = target.getBlockPos();
     BlockPlacementUtils.tryPlaceAt(pos);
     return pos;
@@ -99,7 +101,8 @@ public class AutoFire extends EntityDefenseModule {
     if (lastPos == null)
       return false;
     var block = mc.world.getBlockState(lastPos).getBlock();
-    if (block instanceof AbstractFireBlock) {
+    if (block instanceof AbstractFireBlock &&
+        DefenseStateManager.canPerformAction()) {
       mc.interactionManager.attackBlock(lastPos, Direction.UP);
       return true;
     }

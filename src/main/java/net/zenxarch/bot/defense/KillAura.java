@@ -2,48 +2,29 @@ package net.zenxarch.bot.defense;
 
 import static net.zenxarch.bot.ZenBot.mc;
 import static net.zenxarch.bot.defense.DefenseStateManager.*;
-import static net.zenxarch.bot.util.BaritoneUtils.*;
 import static net.zenxarch.bot.util.ClientPlayerHelper.*;
 
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.Items;
 import net.minecraft.item.MiningToolItem;
 
 public final class KillAura extends EntityDefenseModule {
-  private boolean wasBlocking;
-
-  @Override
-  public void handleNone() {
-    unblockShield();
-    resumePathing();
-  }
-
-  @Override
-  public void handleProjectile(ProjectileEntity pe) {
-    lookAt(pe);
-    blockShield();
-  }
 
   @Override
   public void handleHostile(MobEntity me) {
-    blockShield();
     if (handleCrit())
       hitLiving(me);
   }
 
   @Override
   public void handlePlayer(AbstractClientPlayerEntity pe) {
-    blockShield();
     if (handleCrit())
       hitLiving(pe);
   }
 
   @Override
   public void handlePassive(MobEntity me) {
-    unblockShield();
     if (handleCrit())
       hitLiving(me);
   }
@@ -90,19 +71,5 @@ public final class KillAura extends EntityDefenseModule {
         return false;
     }
     return remainingTicks <= 0;
-  }
-
-  private void blockShield() {
-    if (!mc.player.getOffHandStack().getItem().equals(Items.SHIELD))
-      return;
-    mc.options.useKey.setPressed(true);
-    wasBlocking = true;
-  }
-
-  private void unblockShield() {
-    if (!wasBlocking)
-      return;
-    mc.options.useKey.setPressed(false);
-    wasBlocking = false;
   }
 }
