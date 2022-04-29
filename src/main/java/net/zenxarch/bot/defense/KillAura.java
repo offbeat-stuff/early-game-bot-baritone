@@ -7,7 +7,9 @@ import static net.zenxarch.bot.util.ClientPlayerHelper.*;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.MiningToolItem;
+import net.minecraft.item.SwordItem;
 
 public final class KillAura extends EntityDefenseModule {
 
@@ -43,18 +45,27 @@ public final class KillAura extends EntityDefenseModule {
     var bestDamage = 0.0f;
     var inv = mc.player.getInventory();
     for (int i = 0; i < inv.main.size(); i++) {
-      if (inv.main.get(i).getItem() instanceof MiningToolItem mti) {
-        if (mti.getAttackDamage() > bestDamage) {
-          bestDamage = mti.getAttackDamage();
-          bestSlot = i;
-        }
+      var dmg = getAttackDamage(inv.main.get(i));
+      if (dmg > bestDamage) {
+        bestDamage = dmg;
+        bestSlot = i;
       }
     }
-    if (inv.offHand.get(0).getItem() instanceof MiningToolItem mti &&
-        mti.getAttackDamage() > bestDamage) {
+    var dmg = getAttackDamage(inv.offHand.get(0));
+    if (dmg > bestDamage) {
       bestSlot = inv.main.size();
     }
     return bestSlot;
+  }
+
+  private float getAttackDamage(ItemStack stack) {
+    if (stack.getItem() instanceof SwordItem sword) {
+      return sword.getAttackDamage();
+    }
+    if (stack.getItem() instanceof MiningToolItem mti) {
+      return mti.getAttackDamage();
+    }
+    return 0.0f;
   }
 
   private boolean handleCrit() {
