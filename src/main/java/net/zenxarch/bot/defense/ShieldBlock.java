@@ -38,19 +38,20 @@ public class ShieldBlock extends EntityDefenseModule {
   }
 
   private boolean tryBlock() {
-    if (!DefenseStateManager.canPerformAction())
-      return false;
-    if (!mc.player.getOffHandStack().getItem().equals(Items.SHIELD))
-      return false;
-    mc.options.useKey.setPressed(true);
-    wasBlocking = true;
-    return true;
+    if (mc.player.getOffHandStack().getItem().equals(Items.SHIELD) &&
+        DefenseStateManager.canPerformAction()) {
+      mc.options.useKey.setPressed(true);
+      wasBlocking = true;
+      return true;
+    }
+    unblockShield();
+    return false;
   }
 
   private void unblockShield() {
-    if (!wasBlocking)
-      return;
-    mc.options.useKey.setPressed(false);
-    wasBlocking = false;
+    if (wasBlocking) {
+      mc.options.useKey.setPressed(false);
+      wasBlocking = false;
+    }
   }
 }

@@ -88,20 +88,21 @@ public class AutoFire extends EntityDefenseModule {
   */
 
   private BlockPos simpleFlintAndSteel(LivingEntity target) {
-    if (!pickItem(Items.FLINT_AND_STEEL))
+    var slot = findInInventory(Items.FLINT_AND_STEEL);
+    if (slot == -1)
       return null;
     if (!DefenseStateManager.canPerformAction())
       return null;
+    pickItemSlot(slot);
     var pos = target.getBlockPos();
     BlockPlacementUtils.tryPlaceAt(pos);
     return pos;
   }
 
   private boolean tryExtinguish() {
-    if (lastPos == null)
-      return false;
-    var block = mc.world.getBlockState(lastPos).getBlock();
-    if (block instanceof AbstractFireBlock &&
+    if (lastPos != null &&
+        mc.world.getBlockState(lastPos).getBlock() instanceof
+            AbstractFireBlock &&
         DefenseStateManager.canPerformAction()) {
       mc.interactionManager.attackBlock(lastPos, Direction.UP);
       return true;

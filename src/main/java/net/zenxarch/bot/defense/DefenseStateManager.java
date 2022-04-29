@@ -36,55 +36,36 @@ public class DefenseStateManager {
     if (!isDefenseActive)
       return;
     isActionPerformed = false;
+
     TargetUtil.updateTargets();
-    if (checkTargets())
-      return;
-    if (!tryHandleMcScreen())
+    if (checkTargets() && !tryHandleMcScreen())
       return;
 
     var projectileTarget = TargetUtil.getNearestProjectile();
     if (projectileTarget != null) {
-      for (var module : modules) {
-        if (isActionPerformed)
-          break;
-        module.handleProjectile(projectileTarget);
-      }
+      modules.forEach(m -> m.handleProjectile(projectileTarget));
       return;
     }
 
     var hostileTarget = TargetUtil.getNearestHostile();
     if (hostileTarget != null) {
-      for (var module : modules) {
-        if (isActionPerformed)
-          break;
-        module.handleHostile(hostileTarget);
-      }
+      modules.forEach(m -> m.handleHostile(hostileTarget));
       return;
     }
 
     var playerTarget = TargetUtil.getNearestEnemyPlayer();
     if (playerTarget != null) {
-      for (var module : modules) {
-        if (isActionPerformed)
-          break;
-        module.handlePlayer(playerTarget);
-      }
+      modules.forEach(m -> m.handlePlayer(playerTarget));
       return;
     }
 
     var passiveTarget = TargetUtil.getNearestPassive();
     if (passiveTarget != null) {
-      for (var module : modules) {
-        if (isActionPerformed)
-          break;
-        module.handlePassive(passiveTarget);
-      }
+      modules.forEach(m -> m.handlePassive(passiveTarget));
       return;
     }
 
-    for (var module : modules) {
-      module.handleNone();
-    }
+    modules.forEach(m -> m.handleNone());
   }
 
   public static boolean postTickCheck() { return isActionPerformed; }
