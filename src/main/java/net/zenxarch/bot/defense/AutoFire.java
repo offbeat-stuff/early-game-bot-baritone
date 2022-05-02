@@ -11,10 +11,12 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 import net.zenxarch.bot.util.BlockPlacementUtils;
 
 public class AutoFire extends EntityDefenseModule {
   private BlockPos lastPos = null;
+  private boolean shouldUseComplexMethod = true;
 
   @Override
   public void handleNone() {
@@ -40,7 +42,10 @@ public class AutoFire extends EntityDefenseModule {
     if (performAction(this::tryExtinguish))
       return;
     lastPos = null;
-    if (performAction(() -> simpleFlintAndSteel(target)))
+
+    if (shouldUseComplexMethod)
+      performAction(() -> canBurn(target) && complexFlintAndSteel(target));
+    else if (performAction(() -> simpleFlintAndSteel(target)))
       lastPos = target.getBlockPos();
   }
 
@@ -49,18 +54,19 @@ public class AutoFire extends EntityDefenseModule {
       return false;
     if (mc.player.getEyeY() < target.getBlockY())
       return false;
-    return !(target.isFireImmune || target.isOnFire() || target.isWet() ||
-             target.isInPowderSnow());
+    return !(target.isFireImmune() || target.isOnFire() || target.isWet() ||
+             target.inPowderSnow);
   }
 
-  /* private static BlockPos tryFlintAndSteel(LivingEntity target) {
+  private boolean complexFlintAndSteel(LivingEntity target) {
     var slot = findInInventory(Items.FLINT_AND_STEEL);
     if (slot == -1)
-      return null;
-    var minx = MathHelper.floor(target.getBoundingBox().getMin(Axis.X));
-    var minz = MathHelper.floor(target.getBoundingBox().getMin(Axis.Z));
-    var maxx = MathHelper.ceil(target.getBoundingBox().getMax(Axis.X));
-    var maxz = MathHelper.ceil(target.getBoundingBox().getMax(Axis.Z));
+      return false;
+
+    var minx = MathHelper.floor(target.getBoundingBox().minX);
+    var minz = MathHelper.floor(target.getBoundingBox().minZ);
+    var maxx = MathHelper.ceil(target.getBoundingBox().maxX);
+    var maxz = MathHelper.ceil(target.getBoundingBox().maxZ);
     var y = target.getBlockY();
 
     var bestDist = 4.1 * 4.1;
@@ -70,23 +76,23 @@ public class AutoFire extends EntityDefenseModule {
       for (int z = (int)minz; z <= (int)maxz; z++) {
         var dist = mc.player.squaredDistanceTo(x, y, z);
         var pos = new BlockPos(x, y, z);
-        if (dist > bestDist)
-          continue;
-        if (mc.world.getFluidState(pos).isEmpty())
-          continue;
-        if (canPlaceFireAt(pos)) {
+        if (dist < bestDist && canPlaceFireAt(pos)) {
           bestDist = dist;
           bestPos = pos;
         }
       }
     }
+
     if (bestPos != null) {
       pickItemSlot(slot);
-      BlockPlacementUtils.tryPlaceAt(bestPos);
+      if (BlockPlacementUtils.tryPlaceAt(bestPos)) {
+        lastPos = bestPos;
+        return true;
+      };
     }
-    return bestPos;
+
+    return false;
   }
-  */
 
   private boolean simpleFlintAndSteel(LivingEntity target) {
     return canBurn(target) && pickItem(Items.FLINT_AND_STEEL) &&
@@ -102,11 +108,9 @@ public class AutoFire extends EntityDefenseModule {
     return false;
   }
 
-  /*
-  private static boolean canPlaceFireAt(BlockPos pos) {
-    return pos != null &&
+  private boolean canPlaceFireAt(BlockPos pos) {
+    return pos != null && mc.world.getFluidState(pos).isEmpty() &&
         mc.world.getBlockState(pos).getMaterial().isReplaceable() &&
         AbstractFireBlock.getState(mc.world, pos).canPlaceAt(mc.world, pos);
   }
-  */
 }
