@@ -1,6 +1,7 @@
 package net.zenxarch.bot.defense;
 
 import static net.zenxarch.bot.ZenBot.mc;
+import static net.zenxarch.bot.defense.DefenseStateManager.performAction;
 import static net.zenxarch.bot.util.ClientPlayerHelper.*;
 
 import net.minecraft.block.AbstractFireBlock;
@@ -17,7 +18,7 @@ public class AutoFire extends EntityDefenseModule {
 
   @Override
   public void handleNone() {
-    tryExtinguish();
+    performAction(this::tryExtinguish);
   }
 
   @Override
@@ -36,20 +37,20 @@ public class AutoFire extends EntityDefenseModule {
   }
 
   private void handleTarget(LivingEntity target) {
-    if (tryExtinguish())
+    if (performAction(this::tryExtinguish))
       return;
     lastPos = null;
+    if (performAction(() -> simpleFlintAndSteel(target)))
+      lastPos = target.getBlockPos();
+  }
 
+  private boolean canBurn(LivingEntity target) {
     if (target == null)
-      return;
-
-    var fluid = mc.world.getFluidState(target.getBlockPos());
-
-    if (mc.player.getEyeY() < target.getY() || !fluid.isEmpty() ||
-        target.isOnFire())
-      return;
-
-    lastPos = simpleFlintAndSteel(target);
+      return false;
+    if (mc.player.getEyeY() < target.getBlockY())
+      return false;
+    return !(target.isFireImmune || target.isOnFire() || target.isWet() ||
+             target.isInPowderSnow());
   }
 
   /* private static BlockPos tryFlintAndSteel(LivingEntity target) {
@@ -87,28 +88,20 @@ public class AutoFire extends EntityDefenseModule {
   }
   */
 
-  private BlockPos simpleFlintAndSteel(LivingEntity target) {
-    var slot = findInInventory(Items.FLINT_AND_STEEL);
-    if (slot == -1)
-      return null;
-    if (!DefenseStateManager.canPerformAction())
-      return null;
-    pickItemSlot(slot);
-    var pos = target.getBlockPos();
-    BlockPlacementUtils.tryPlaceAt(pos);
-    return pos;
+  private boolean simpleFlintAndSteel(LivingEntity target) {
+    return canBurn(target) && pickItem(Items.FLINT_AND_STEEL) &&
+        BlockPlacementUtils.tryPlaceAt(target.getBlockPos());
   }
 
   private boolean tryExtinguish() {
-    if (lastPos != null &&
-        mc.world.getBlockState(lastPos).getBlock() instanceof
-            AbstractFireBlock &&
-        DefenseStateManager.canPerformAction()) {
-      mc.interactionManager.attackBlock(lastPos, Direction.UP);
+    if (lastPos != null && mc.world.getBlockState(lastPos).getBlock() instanceof
+                               AbstractFireBlock) {
+      mc.interactionManager.attackBlock(lastPos.down(), Direction.UP);
       return true;
     }
     return false;
   }
+
   /*
   private static boolean canPlaceFireAt(BlockPos pos) {
     return pos != null &&

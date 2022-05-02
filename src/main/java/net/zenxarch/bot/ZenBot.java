@@ -37,14 +37,19 @@ public class ZenBot implements ClientModInitializer {
   }
 
   private void handleTickStart(MinecraftClient mc) {
-    if (mc.world == null)
+    if (isPlayerUnsafeToControl())
       return;
     DefenseStateManager.preTick();
     CraftProcess.preTick();
   }
 
+  private boolean isPlayerUnsafeToControl() {
+    return mc.world == null || mc.player == null || mc.player.isDead() ||
+        mc.player.isSpectator() || mc.player.isSleeping();
+  }
+
   private void handleTickEnd(MinecraftClient mc) {
-    if (mc.world == null)
+    if (isPlayerUnsafeToControl())
       return;
     if (DefenseStateManager.postTickCheck())
       return;

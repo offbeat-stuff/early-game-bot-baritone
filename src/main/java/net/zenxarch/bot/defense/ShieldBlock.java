@@ -1,6 +1,7 @@
 package net.zenxarch.bot.defense;
 
 import static net.zenxarch.bot.ZenBot.mc;
+import static net.zenxarch.bot.defense.DefenseStateManager.performAction;
 
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.mob.MobEntity;
@@ -15,7 +16,7 @@ public class ShieldBlock extends EntityDefenseModule {
 
   @Override
   public void handleNone() {
-    unblockShield();
+    setBlocking(false);
   }
 
   @Override
@@ -36,17 +37,11 @@ public class ShieldBlock extends EntityDefenseModule {
 
   @Override
   public void handlePassive(MobEntity me) {
-    unblockShield();
+    setBlocking(false);
   }
 
   private boolean tryBlock() {
-    if (shieldCheck() && DefenseStateManager.canPerformAction()) {
-      mc.options.useKey.setPressed(true);
-      wasBlocking = true;
-      return true;
-    }
-    unblockShield();
-    return false;
+    return setBlocking(shieldCheck() && performAction(() -> true));
   }
 
   private boolean shieldCheck() {
@@ -60,10 +55,11 @@ public class ShieldBlock extends EntityDefenseModule {
     return !(item.isFood());
   }
 
-  private void unblockShield() {
-    if (wasBlocking) {
-      mc.options.useKey.setPressed(false);
-      wasBlocking = false;
+  private boolean setBlocking(boolean blocking) {
+    if (wasBlocking = !blocking) {
+      mc.options.useKey.setPressed(blocking);
+      wasBlocking = blocking;
     }
+    return wasBlocking;
   }
 }

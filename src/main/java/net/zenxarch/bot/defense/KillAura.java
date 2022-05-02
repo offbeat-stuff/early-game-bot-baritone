@@ -32,12 +32,13 @@ public final class KillAura extends EntityDefenseModule {
   }
 
   private void hitLiving(LivingEntity le) {
-    if (!canPerformAction())
-      return;
-    if (!lookingAt(le))
-      lookAt(le);
-    pickItemSlot(findBestWeapon());
-    hitEntity(le);
+    performAction(() -> {
+      if (!lookingAt(le))
+        lookAt(le);
+      pickItemSlot(findBestWeapon());
+      hitEntity(le);
+      return true;
+    });
   }
 
   private int findBestWeapon() {
@@ -51,8 +52,8 @@ public final class KillAura extends EntityDefenseModule {
         bestSlot = i;
       }
     }
-    var dmg = getAttackDamage(inv.offHand.get(0));
-    if (dmg > bestDamage) {
+
+    if (getAttackDamage(inv.offHand.get(0)) > bestDamage) {
       bestSlot = inv.main.size();
     }
     return bestSlot;
@@ -75,8 +76,10 @@ public final class KillAura extends EntityDefenseModule {
     if (canCrit) {
       if (mc.player.isOnGround()) {
         if (remainingTicks < 5)
-          if (canPerformAction())
+          performAction(() -> {
             mc.player.jump();
+            return true;
+          });
         return false;
       } else if (mc.player.getVelocity().y > 0)
         return false;

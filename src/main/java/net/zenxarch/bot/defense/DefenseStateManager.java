@@ -3,6 +3,7 @@ package net.zenxarch.bot.defense;
 import static net.zenxarch.bot.ZenBot.mc;
 
 import java.util.ArrayList;
+import java.util.function.BooleanSupplier;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.zenxarch.bot.util.TargetUtil;
 
@@ -23,6 +24,7 @@ public class DefenseStateManager {
   public static void init() {
     modules.add(new KillAura());
     modules.add(new AutoFire());
+    modules.add(new ShieldBlock());
   }
 
   private static boolean checkTargets() {
@@ -70,11 +72,11 @@ public class DefenseStateManager {
 
   public static boolean postTickCheck() { return isActionPerformed; }
 
-  public static boolean canPerformAction() {
+  public static boolean performAction(BooleanSupplier action) {
     if (isActionPerformed)
       return false;
-    isActionPerformed = true;
-    return true;
+    isActionPerformed = action.getAsBoolean();
+    return isActionPerformed;
   }
 
   public static boolean tryHandleMcScreen() {
