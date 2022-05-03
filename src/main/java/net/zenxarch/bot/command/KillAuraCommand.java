@@ -4,6 +4,7 @@ import static net.fabricmc.fabric.api.client.command.v1.ClientCommandManager.*;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import java.util.ArrayList;
 import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
 import net.minecraft.text.LiteralText;
@@ -41,8 +42,12 @@ public class KillAuraCommand {
             }));
   }
 
-  private ArrayList<LiteralArgumentBuilder> generateSettings() {
-    var result = new ArrayList<LiteralArgumentBuilder>();
+  private ArrayList<LiteralArgumentBuilder<FabricClientCommandSource>>
+  generateSettings() {
+    var result =
+        new ArrayList<LiteralArgumentBuilder<FabricClientCommandSource>>();
+    for (var module : DefenseStateManager.getModules()) {
+    }
     return result;
   }
 }

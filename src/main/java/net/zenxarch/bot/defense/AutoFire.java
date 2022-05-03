@@ -19,9 +19,8 @@ public class AutoFire extends EntityDefenseModule {
   private Settings settings;
 
   public AutoFire() {
-    super();
-    this.name = "AutoFire";
-    this.settings.add(
+    super("AutoFire");
+    this.settings.addSetting(
         new Settings.BooleanSetting("shouldUseComplexMethod", true));
   }
 

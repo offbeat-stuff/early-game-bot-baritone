@@ -14,10 +14,7 @@ import net.zenxarch.bot.util.ClientPlayerHelper;
 public class ShieldBlock extends EntityDefenseModule {
   private static boolean wasBlocking;
 
-  public ShieldBlock() {
-    super();
-    this.name = "ShieldBlock";
-  }
+  public ShieldBlock() { super("ShieldBlock"); }
 
   @Override
   public void handleNone() {

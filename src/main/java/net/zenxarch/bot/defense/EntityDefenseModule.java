@@ -8,7 +8,10 @@ public class EntityDefenseModule {
   private Settings settings;
   private String name;
 
-  public EntityDefenseModule() { this.settings = new Settings(); }
+  public EntityDefenseModule(String name) {
+    this.settings = new Settings();
+    this.name = name;
+  }
 
   public void handleNone(){};
   public void handleProjectile(ProjectileEntity pe){};
@@ -16,7 +19,11 @@ public class EntityDefenseModule {
   public void handlePlayer(AbstractClientPlayerEntity pe){};
   public void handlePassive(MobEntity me){};
 
-  public Settings.Setting getSetting(String name) { this.settings.get(name); }
+  public Settings.Setting<?> getSetting(String name) {
+    return settings.get(name);
+  }
 
   public Settings getSettings() { return settings; }
+
+  public String getName() { return name; }
 }

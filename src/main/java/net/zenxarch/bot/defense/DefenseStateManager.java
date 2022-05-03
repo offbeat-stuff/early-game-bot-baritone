@@ -70,7 +70,7 @@ public class DefenseStateManager {
     modules.forEach(m -> m.handleNone());
   }
 
-  public ArrayList<EntityDefenseModule> getModules() { return this.modules; }
+  public static ArrayList<EntityDefenseModule> getModules() { return modules; }
 
   public static boolean postTickCheck() { return isActionPerformed; }
 

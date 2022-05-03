@@ -13,10 +13,7 @@ import net.minecraft.item.SwordItem;
 
 public final class KillAura extends EntityDefenseModule {
 
-  public KillAura() {
-    super();
-    this.name = "KillAura";
-  }
+  public KillAura() { super("KillAura"); }
 
   @Override
   public void handleHostile(MobEntity me) {
