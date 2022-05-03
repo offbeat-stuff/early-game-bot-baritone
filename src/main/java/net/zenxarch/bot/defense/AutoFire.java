@@ -16,7 +16,6 @@ import net.zenxarch.bot.util.BlockPlacementUtils;
 
 public class AutoFire extends EntityDefenseModule {
   private BlockPos lastPos = null;
-  private Settings settings;
 
   public AutoFire() {
     super("AutoFire");

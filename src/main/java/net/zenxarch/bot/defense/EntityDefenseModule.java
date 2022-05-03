@@ -5,7 +5,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 
 public class EntityDefenseModule {
-  private Settings settings;
+  protected Settings settings;
   private String name;
 
   public EntityDefenseModule(String name) {
