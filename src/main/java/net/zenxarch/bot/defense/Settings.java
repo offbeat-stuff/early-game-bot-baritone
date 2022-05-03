@@ -19,6 +19,14 @@ public class Settings {
     return null;
   }
 
+  public ArrayList<String> getSettings() {
+    var result = new ArrayList<String>();
+    for (var setting : settings) {
+      result.add(setting.getName());
+    }
+    return result;
+  }
+
   public void addSetting(Setting<?> setting) { this.settings.add(setting); }
 
   public static class Setting<T> {

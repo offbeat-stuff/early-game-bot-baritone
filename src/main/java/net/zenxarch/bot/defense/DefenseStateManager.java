@@ -72,6 +72,15 @@ public class DefenseStateManager {
 
   public static ArrayList<EntityDefenseModule> getModules() { return modules; }
 
+  public static EntityDefenseModule getModule(String name) {
+    for (var module : modules) {
+      if (module.getName() == name) {
+        return module;
+      }
+    }
+    return null;
+  }
+
   public static boolean postTickCheck() { return isActionPerformed; }
 
   public static boolean performAction(BooleanSupplier action) {
