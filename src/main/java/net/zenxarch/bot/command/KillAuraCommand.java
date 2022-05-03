@@ -33,7 +33,9 @@ public class KillAuraCommand {
             .then(argument("SettingName", StringArgumentType.string())
                       .suggests((c, b) -> suggestMatching(getSettings(c), b))
                       .then(argument("SettingValue", BoolArgumentType.bool())
-                                .executes(ctx -> runCommand(ctx)))));
+                                .executes(ctx -> runModuleSettingFull(ctx)))
+                      .executes(ctx -> runModuleSettingHalf(ctx)))
+            .executes(ctx -> runModuleSettingEmpty(ctx)));
   }
 
   private static LiteralArgumentBuilder<FabricClientCommandSource>
@@ -67,21 +69,61 @@ public class KillAuraCommand {
   toggleDefense(CommandContext<FabricClientCommandSource> ctx) {
     active = !active;
     String text = active ? "Defense Activated" : "Defense Deactived";
-    ctx.getSource().sendFeedback(new LiteralText(text));
+    sendMessage(ctx, text);
     DefenseStateManager.setActiveStatus(active);
     return 0;
   }
 
-  private static int runCommand(CommandContext<?> ctx) {
+  private static int
+  runModuleSettingEmpty(CommandContext<FabricClientCommandSource> ctx) {
+    return handleArgs(ctx, StringArgumentType.getString(ctx, "ModuleName"), "",
+                      false, false);
+  }
+
+  private static int
+  runModuleSettingHalf(CommandContext<FabricClientCommandSource> ctx) {
+    var moduleName = StringArgumentType.getString(ctx, "ModuleName");
+    var settingName = StringArgumentType.getString(ctx, "SettingName");
+    return handleArgs(ctx, moduleName, settingName, false, false);
+  }
+
+  private static int
+  runModuleSettingFull(CommandContext<FabricClientCommandSource> ctx) {
     var moduleName = StringArgumentType.getString(ctx, "ModuleName");
     var settingName = StringArgumentType.getString(ctx, "SettingName");
     var settingValue = BoolArgumentType.getBool(ctx, "SettingValue");
-    var setting =
-        DefenseStateManager.getModule(moduleName).getSetting(settingName);
-    if (setting instanceof BooleanSetting bs) {
-      bs.set(settingValue);
+    return handleArgs(ctx, moduleName, settingName, true, settingValue);
+  }
+
+  private static int handleArgs(CommandContext<FabricClientCommandSource> ctx,
+                                String moduleName, String settingName,
+                                boolean valueGiven, boolean value) {
+    var module = DefenseStateManager.getModule(moduleName);
+    if (module == null)
+      return 1;
+    if (settingName == "") {
+      for (var setting : module.getSettings().getSettings()) {
+        sendMessage(ctx, setting + " : " + module.getSetting(setting).get());
+      }
+      return 0;
     }
-    return 1;
+
+    var setting = module.getSetting(settingName);
+    if (!valueGiven) {
+      sendMessage(ctx,
+                  settingName + " : " + module.getSetting(settingName).get());
+      return 0;
+    }
+
+    if (setting instanceof BooleanSetting bs) {
+      bs.set(value);
+    }
+    return 0;
+  }
+
+  private static void sendMessage(CommandContext<FabricClientCommandSource> ctx,
+                                  String message) {
+    ctx.getSource().sendFeedback(new LiteralText(message));
   }
 
   private static ArrayList<String> getModules() {
