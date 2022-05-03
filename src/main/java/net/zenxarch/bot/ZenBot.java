@@ -30,6 +30,7 @@ public class ZenBot implements ClientModInitializer {
     // state. However, some things (like resources) may still be
     // uninitialized. Proceed with mild caution.
     LOGGER.info("ZenBot loaded have fun botting.");
+    DefenseStateManager.init();
     ZenCommandManager.registerCommands();
     LOGGER.info("registered commands");
     ClientTickEvents.START_CLIENT_TICK.register(mc -> handleTickStart(mc));

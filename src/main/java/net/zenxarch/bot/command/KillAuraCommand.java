@@ -4,6 +4,7 @@ import static net.fabricmc.fabric.api.client.command.v1.ClientCommandManager.*;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import java.util.ArrayList;
 import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
 import net.minecraft.text.LiteralText;
 import net.zenxarch.bot.defense.DefenseStateManager;
@@ -38,5 +39,10 @@ public class KillAuraCommand {
               DefenseStateManager.setActiveStatus(active);
               return 0;
             }));
+  }
+
+  private ArrayList<LiteralArgumentBuilder> generateSettings() {
+    var result = new ArrayList<LiteralArgumentBuilder>();
+    return result;
   }
 }

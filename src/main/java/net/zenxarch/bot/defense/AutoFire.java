@@ -16,7 +16,14 @@ import net.zenxarch.bot.util.BlockPlacementUtils;
 
 public class AutoFire extends EntityDefenseModule {
   private BlockPos lastPos = null;
-  private boolean shouldUseComplexMethod = true;
+  private Settings settings;
+
+  public AutoFire() {
+    super();
+    this.name = "AutoFire";
+    this.settings.add(
+        new Settings.BooleanSetting("shouldUseComplexMethod", true));
+  }
 
   @Override
   public void handleNone() {
@@ -43,10 +50,18 @@ public class AutoFire extends EntityDefenseModule {
       return;
     lastPos = null;
 
-    if (shouldUseComplexMethod)
+    if (shouldUseComplexMethod())
       performAction(() -> canBurn(target) && complexFlintAndSteel(target));
     else if (performAction(() -> simpleFlintAndSteel(target)))
       lastPos = target.getBlockPos();
+  }
+
+  private boolean shouldUseComplexMethod() {
+    if (settings.get("shouldUseComplexMethod") instanceof
+        Settings.BooleanSetting bs) {
+      return bs.get();
+    }
+    return false;
   }
 
   private boolean canBurn(LivingEntity target) {
