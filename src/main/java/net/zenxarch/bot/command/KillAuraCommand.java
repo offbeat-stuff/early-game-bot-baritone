@@ -1,18 +1,20 @@
 package net.zenxarch.bot.command;
 
+import static com.mojang.brigadier.arguments.BoolArgumentType.*;
+import static com.mojang.brigadier.arguments.StringArgumentType.*;
 import static net.fabricmc.fabric.api.client.command.v1.ClientCommandManager.*;
 import static net.minecraft.command.CommandSource.suggestMatching;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import java.util.ArrayList;
 import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
 import net.minecraft.text.LiteralText;
 import net.zenxarch.bot.defense.DefenseStateManager;
+import net.zenxarch.bot.defense.EntityDefenseModule;
 import net.zenxarch.bot.defense.Settings.BooleanSetting;
+import net.zenxarch.bot.defense.Settings.Setting;
 import net.zenxarch.bot.util.TargetUtil;
 
 public class KillAuraCommand {
@@ -27,28 +29,43 @@ public class KillAuraCommand {
 
   private static LiteralArgumentBuilder<FabricClientCommandSource>
   generateSettings() {
-    return literal("setting").then(
-        argument("ModuleName", StringArgumentType.string())
+    var m = "ModuleName";
+    var s = "SettingName";
+    var v = "SettingValue";
+    var sv = argument(v, bool()).executes(ctx
+                                          -> handleArgs(ctx, getString(ctx, m),
+                                                        getString(ctx, s), true,
+                                                        getBool(ctx, v)));
+    var sc = argument(s, word())
+                 .suggests((c, b) -> suggestMatching(getSettings(c, m), b))
+                 .then(sv)
+                 .executes(ctx
+                           -> handleArgs(ctx, getString(ctx, m),
+                                         getString(ctx, s), false, false));
+    var mc =
+        argument(m, word())
             .suggests((c, b) -> suggestMatching(getModules(), b))
-            .then(argument("SettingName", StringArgumentType.string())
-                      .suggests((c, b) -> suggestMatching(getSettings(c), b))
-                      .then(argument("SettingValue", BoolArgumentType.bool())
-                                .executes(ctx -> runModuleSettingFull(ctx)))
-                      .executes(ctx -> runModuleSettingHalf(ctx)))
-            .executes(ctx -> runModuleSettingEmpty(ctx)));
+            .then(sc)
+            .executes(
+                ctx -> handleArgs(ctx, getString(ctx, m), "", false, false));
+    return literal("setting").then(mc).executes(ctx -> {
+      for (var module : DefenseStateManager.getModules()) {
+        echoModuleSettings(ctx, module);
+      }
+      return 0;
+    });
   }
 
   private static LiteralArgumentBuilder<FabricClientCommandSource>
   generatePlayerCommand() {
     return literal("player").then(
-        argument("PlayerName", StringArgumentType.string())
+        argument("PlayerName", string())
             .suggests((c, b) -> suggestMatching(getPlayers(c.getSource()), b))
             .executes(ctx -> {
-              var username = StringArgumentType.getString(ctx, "PlayerName");
+              var username = getString(ctx, "PlayerName");
               TargetUtil.handleUsername(username);
               if (TargetUtil.getUsernames().contains(username)) {
-                ctx.getSource().sendFeedback(
-                    new LiteralText("Currently targeting " + username + ";"));
+                sendMessage(ctx, "Currently targeting " + username + ";");
               }
               return 0;
             }));
@@ -74,27 +91,6 @@ public class KillAuraCommand {
     return 0;
   }
 
-  private static int
-  runModuleSettingEmpty(CommandContext<FabricClientCommandSource> ctx) {
-    return handleArgs(ctx, StringArgumentType.getString(ctx, "ModuleName"), "",
-                      false, false);
-  }
-
-  private static int
-  runModuleSettingHalf(CommandContext<FabricClientCommandSource> ctx) {
-    var moduleName = StringArgumentType.getString(ctx, "ModuleName");
-    var settingName = StringArgumentType.getString(ctx, "SettingName");
-    return handleArgs(ctx, moduleName, settingName, false, false);
-  }
-
-  private static int
-  runModuleSettingFull(CommandContext<FabricClientCommandSource> ctx) {
-    var moduleName = StringArgumentType.getString(ctx, "ModuleName");
-    var settingName = StringArgumentType.getString(ctx, "SettingName");
-    var settingValue = BoolArgumentType.getBool(ctx, "SettingValue");
-    return handleArgs(ctx, moduleName, settingName, true, settingValue);
-  }
-
   private static int handleArgs(CommandContext<FabricClientCommandSource> ctx,
                                 String moduleName, String settingName,
                                 boolean valueGiven, boolean value) {
@@ -102,16 +98,13 @@ public class KillAuraCommand {
     if (module == null)
       return 1;
     if (settingName == "") {
-      for (var setting : module.getSettings().getSettings()) {
-        sendMessage(ctx, setting + " : " + module.getSetting(setting).get());
-      }
+      echoModuleSettings(ctx, module);
       return 0;
     }
 
     var setting = module.getSetting(settingName);
     if (!valueGiven) {
-      sendMessage(ctx,
-                  settingName + " : " + module.getSetting(settingName).get());
+      echoSettingValue(ctx, setting);
       return 0;
     }
 
@@ -119,6 +112,20 @@ public class KillAuraCommand {
       bs.set(value);
     }
     return 0;
+  }
+
+  private static void
+  echoModuleSettings(CommandContext<FabricClientCommandSource> ctx,
+                     EntityDefenseModule module) {
+    for (var setting : module.getSettings().getSettings()) {
+      echoSettingValue(ctx, module.getSetting(setting));
+    }
+  }
+
+  private static void
+  echoSettingValue(CommandContext<FabricClientCommandSource> ctx,
+                   Setting<?> setting) {
+    sendMessage(ctx, setting.getName() + " : " + setting.get());
   }
 
   private static void sendMessage(CommandContext<FabricClientCommandSource> ctx,
@@ -134,8 +141,9 @@ public class KillAuraCommand {
     return result;
   }
 
-  private static ArrayList<String> getSettings(CommandContext<?> source) {
-    var moduleName = StringArgumentType.getString(source, "ModuleName");
+  private static ArrayList<String> getSettings(CommandContext<?> source,
+                                               String m) {
+    var moduleName = getString(source, m);
     var module = DefenseStateManager.getModule(moduleName);
     if (module != null) {
       return module.getSettings().getSettings();
