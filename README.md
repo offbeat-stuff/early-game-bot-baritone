@@ -18,5 +18,7 @@ To display module setting value
 `/zaura setting <moduleName> <settingName> `
 To display all settings of a module
 `/zaura setting <moduleName>`
+To display all settings of all modules
+`/zaura setting`
 
 > Written with [StackEdit](https://stackedit.io/).
