@@ -14,7 +14,6 @@ import net.minecraft.entity.mob.FlyingEntity;
 import net.minecraft.entity.mob.HoglinEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.PhantomEntity;
 import net.minecraft.entity.mob.SlimeEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
@@ -42,6 +41,14 @@ public class TargetUtil {
           add(EntityType.PIG);
           add(EntityType.CHICKEN);
           add(EntityType.RABBIT);
+        }
+      };
+  private static final ArrayList<EntityType<?>> nuetralTypes =
+      new ArrayList<>() {
+        {
+          add(EntityType.SPIDER);
+          add(EntityType.PIGLIN);
+          add(EntityType.ZOMBIFIED_PIGLIN);
         }
       };
 
@@ -150,7 +157,7 @@ public class TargetUtil {
   private static boolean checkHostile(MobEntity e) {
     if (e instanceof EndermanEntity eman && !eman.isAngry())
       return false;
-    if (!e.isAttacking() && !(e instanceof PhantomEntity))
+    if (nuetralTypes.contains(e.getType()) && !e.isAttacking())
       return false;
     return e instanceof EnderDragonEntity || e instanceof FlyingEntity ||
         e instanceof SlimeEntity || e instanceof HostileEntity ||

@@ -12,6 +12,7 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult.Type;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.zenxarch.bot.mixin.PlayerEntityAccessor;
 
 public class ClientPlayerHelper {
   private static final MinecraftClient mc = MinecraftClient.getInstance();
@@ -96,11 +97,8 @@ public class ClientPlayerHelper {
   }
 
   public static int getRemainingAttackCooldownTicks() {
-    float remainingProgress = 1.0f - mc.player.getAttackCooldownProgress(0.0f);
-    var perTick = mc.player.getAttackCooldownProgressPerTick();
-    if (remainingProgress == 0.0f || perTick == 0.0f)
-      return 0;
-    return (int)(remainingProgress / perTick);
+    return (int)mc.player.getAttackCooldownProgressPerTick() -
+        ((PlayerEntityAccessor)mc.player).getLastAttackedTicks();
   }
 
   public static void hitEntity(Entity e) {

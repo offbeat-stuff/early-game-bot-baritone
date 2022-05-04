@@ -3,7 +3,8 @@
     "package": "net.zenxarch.bot.mixin",
     "compatibilityLevel": "JAVA_17",
     "mixins": [
-      "ProjectileEntityAccessor"
+      "ProjectileEntityAccessor",
+      "PlayerEntityAccessor"
     ],
     "client": [],
     "server": [],

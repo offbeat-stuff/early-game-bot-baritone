@@ -44,13 +44,12 @@ public class ZenBot implements ClientModInitializer {
 
   private boolean isPlayerUnsafeToControl() {
     return mc.world == null || mc.player == null || mc.player.isDead() ||
-        mc.player.isSpectator() || mc.player.isSleeping();
+        mc.player.isSpectator() || mc.player.isSleeping() ||
+        mc.player.isRiding();
   }
 
   private void handleTickEnd(MinecraftClient mc) {
-    if (isPlayerUnsafeToControl())
-      return;
-    if (DefenseStateManager.postTickCheck())
+    if (isPlayerUnsafeToControl() || DefenseStateManager.postTickCheck())
       return;
     CraftProcess.postTick();
   }

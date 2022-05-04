@@ -5,7 +5,9 @@ import static net.zenxarch.bot.defense.DefenseStateManager.*;
 import static net.zenxarch.bot.util.ClientPlayerHelper.*;
 
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.MiningToolItem;
@@ -37,43 +39,43 @@ public final class KillAura extends EntityDefenseModule {
     performAction(() -> {
       if (!lookingAt(le))
         lookAt(le);
-      pickItemSlot(findBestWeapon());
+      pickItemSlot(findBestWeapon(le));
       hitEntity(le);
       return true;
     });
   }
 
-  private int findBestWeapon() {
+  private int findBestWeapon(LivingEntity target) {
     var bestSlot = -1;
     var bestDamage = 0.0f;
     var inv = mc.player.getInventory();
     for (int i = 0; i < inv.main.size(); i++) {
-      var dmg = getAttackDamage(inv.main.get(i));
+      var dmg = getAttackDamage(inv.main.get(i), target);
       if (dmg > bestDamage) {
         bestDamage = dmg;
         bestSlot = i;
       }
     }
 
-    if (getAttackDamage(inv.offHand.get(0)) > bestDamage) {
+    if (getAttackDamage(inv.offHand.get(0), target) > bestDamage) {
       bestSlot = inv.main.size();
     }
     return bestSlot;
   }
 
-  private float getAttackDamage(ItemStack stack) {
-    if (stack.getItem() instanceof SwordItem sword) {
-      return sword.getAttackDamage();
-    }
-    if (stack.getItem() instanceof MiningToolItem mti) {
-      return mti.getAttackDamage();
+  private float getAttackDamage(ItemStack stack, LivingEntity target) {
+    if (stack.getItem() instanceof SwordItem || stack.getItem() instanceof
+                                                    MiningToolItem) {
+      return EnchantmentHelper.getAttackDamage(stack, target.getGroup());
     }
     return 0.0f;
   }
 
   private boolean handleCrit() {
-    var canCrit = !(mc.player.isSubmergedInWater() || mc.player.isClimbing() ||
-                    mc.player.isInLava());
+    var canCrit = !(mc.player.isTouchingWater() || mc.player.isClimbing() ||
+                    mc.player.isInLava() ||
+                    mc.player.hasStatusEffect(StatusEffects.BLINDNESS) ||
+                    mc.player.hasVehicle());
     var remainingTicks = getRemainingAttackCooldownTicks();
     if (canCrit) {
       if (mc.player.isOnGround()) {
@@ -83,8 +85,8 @@ public final class KillAura extends EntityDefenseModule {
             return true;
           });
         return false;
-      } else if (mc.player.getVelocity().y > 0)
-        return false;
+      } else
+        return mc.player.fallDistance > 0;
     }
     return remainingTicks <= 0;
   }
