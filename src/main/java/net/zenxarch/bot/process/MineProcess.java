@@ -6,6 +6,7 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Items;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.TagKey;
+import net.minecraft.util.registry.Registry;
 import net.zenxarch.bot.util.BaritoneUtils;
 
 public class MineProcess {
@@ -35,6 +36,12 @@ public class MineProcess {
   }
 
   private static boolean checkTag(Block target, TagKey<Block> tag) {
-    return target.getRegistryEntry().isIn(tag);
+    var optionalKey = Registry.BLOCK.getKey(target);
+    if (optionalKey.isEmpty())
+      return false;
+    var optionalEntry = Registry.BLOCK.getEntry(optionalKey.get());
+    if (optionalEntry.isEmpty())
+      return false;
+    return optionalEntry.get().isIn(tag);
   }
 }

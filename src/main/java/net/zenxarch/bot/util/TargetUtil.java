@@ -32,17 +32,18 @@ public class TargetUtil {
   private static AbstractClientPlayerEntity playerTarget;
 
   private static final MinecraftClient mc = MinecraftClient.getInstance();
-  private static final ArrayList<EntityType> passiveTypes = new ArrayList<>() {
-    {
-      add(EntityType.COD);
-      add(EntityType.SALMON);
-      add(EntityType.COW);
-      add(EntityType.SHEEP);
-      add(EntityType.PIG);
-      add(EntityType.CHICKEN);
-      add(EntityType.RABBIT);
-    }
-  };
+  private static final ArrayList<EntityType<?>> passiveTypes =
+      new ArrayList<>() {
+        {
+          add(EntityType.COD);
+          add(EntityType.SALMON);
+          add(EntityType.COW);
+          add(EntityType.SHEEP);
+          add(EntityType.PIG);
+          add(EntityType.CHICKEN);
+          add(EntityType.RABBIT);
+        }
+      };
 
   private static ArrayList<String> playerUsernameStrings =
       new ArrayList<String>();
