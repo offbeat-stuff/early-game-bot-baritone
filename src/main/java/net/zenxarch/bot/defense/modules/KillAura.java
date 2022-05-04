@@ -1,4 +1,4 @@
-package net.zenxarch.bot.defense;
+package net.zenxarch.bot.defense.modules;
 
 import static net.zenxarch.bot.ZenBot.mc;
 import static net.zenxarch.bot.defense.DefenseStateManager.*;
@@ -13,7 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.MiningToolItem;
 import net.minecraft.item.SwordItem;
 
-public final class KillAura extends EntityDefenseModule {
+public final class KillAura extends Module {
 
   public KillAura() { super("KillAura"); }
 

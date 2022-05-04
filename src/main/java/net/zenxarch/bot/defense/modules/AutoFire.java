@@ -1,4 +1,4 @@
-package net.zenxarch.bot.defense;
+package net.zenxarch.bot.defense.modules;
 
 import static net.zenxarch.bot.ZenBot.mc;
 import static net.zenxarch.bot.defense.DefenseStateManager.performAction;
@@ -12,9 +12,10 @@ import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.zenxarch.bot.defense.Settings;
 import net.zenxarch.bot.util.BlockPlacementUtils;
 
-public class AutoFire extends EntityDefenseModule {
+public class AutoFire extends Module {
   private BlockPos lastPos = null;
 
   public AutoFire() {

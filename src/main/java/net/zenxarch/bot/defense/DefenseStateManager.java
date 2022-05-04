@@ -5,13 +5,14 @@ import static net.zenxarch.bot.ZenBot.mc;
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.zenxarch.bot.defense.modules.*;
+import net.zenxarch.bot.defense.modules.Module;
 import net.zenxarch.bot.util.TargetUtil;
 
 public class DefenseStateManager {
   private static boolean isDefenseActive;
   private static boolean isActionPerformed;
-  private static final ArrayList<EntityDefenseModule> modules =
-      new ArrayList<>();
+  private static final ArrayList<Module> modules = new ArrayList<>();
 
   private static boolean shouldCloseHandledScreen;
 
@@ -70,9 +71,9 @@ public class DefenseStateManager {
     modules.forEach(m -> m.handleNone());
   }
 
-  public static ArrayList<EntityDefenseModule> getModules() { return modules; }
+  public static ArrayList<Module> getModules() { return modules; }
 
-  public static EntityDefenseModule getModule(String name) {
+  public static Module getModule(String name) {
     for (var module : modules) {
       if (module.getName() == name) {
         return module;

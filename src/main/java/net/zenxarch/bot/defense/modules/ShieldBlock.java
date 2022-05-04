@@ -1,4 +1,4 @@
-package net.zenxarch.bot.defense;
+package net.zenxarch.bot.defense.modules;
 
 import static net.zenxarch.bot.ZenBot.mc;
 import static net.zenxarch.bot.defense.DefenseStateManager.performAction;
@@ -11,7 +11,7 @@ import net.minecraft.item.Items;
 import net.minecraft.util.hit.HitResult;
 import net.zenxarch.bot.util.ClientPlayerHelper;
 
-public class ShieldBlock extends EntityDefenseModule {
+public class ShieldBlock extends Module {
   private static boolean wasBlocking;
 
   public ShieldBlock() { super("ShieldBlock"); }

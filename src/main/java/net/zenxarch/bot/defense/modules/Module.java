@@ -1,14 +1,15 @@
-package net.zenxarch.bot.defense;
+package net.zenxarch.bot.defense.modules;
 
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.zenxarch.bot.defense.Settings;
 
-public class EntityDefenseModule {
+public class Module {
   protected Settings settings;
   private String name;
 
-  public EntityDefenseModule(String name) {
+  public Module(String name) {
     this.settings = new Settings();
     this.name = name;
   }

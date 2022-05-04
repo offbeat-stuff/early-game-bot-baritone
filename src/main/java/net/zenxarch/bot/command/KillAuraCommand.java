@@ -12,9 +12,9 @@ import java.util.ArrayList;
 import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
 import net.minecraft.text.LiteralText;
 import net.zenxarch.bot.defense.DefenseStateManager;
-import net.zenxarch.bot.defense.EntityDefenseModule;
 import net.zenxarch.bot.defense.Settings.BooleanSetting;
 import net.zenxarch.bot.defense.Settings.Setting;
+import net.zenxarch.bot.defense.modules.Module;
 import net.zenxarch.bot.util.TargetUtil;
 
 public class KillAuraCommand {
@@ -116,7 +116,7 @@ public class KillAuraCommand {
 
   private static void
   echoModuleSettings(CommandContext<FabricClientCommandSource> ctx,
-                     EntityDefenseModule module) {
+                     Module module) {
     for (var setting : module.getSettings().getSettings()) {
       echoSettingValue(ctx, module.getSetting(setting));
     }
