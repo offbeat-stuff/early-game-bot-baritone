@@ -1,7 +1,7 @@
 package net.zenxarch.bot.util;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
+import static net.zenxarch.bot.ZenBot.mc;
+
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -13,40 +13,28 @@ import net.minecraft.world.RaycastContext.FluidHandling;
 import net.minecraft.world.RaycastContext.ShapeType;
 
 public class BlockPlacementUtils {
-  private static final MinecraftClient mc = MinecraftClient.getInstance();
 
-  public static boolean tryPlaceAt(BlockPos pos) {
-    var vpos = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
-    var hit = praycast(vpos.add(0.5, -0.02, 0.5), FluidHandling.ANY);
-    if (hit.getType() != HitResult.Type.BLOCK)
-      return false;
-    var bhit = (BlockHitResult)hit;
-    BlockState state = mc.world.getBlockState(pos);
-    if (bhit.getBlockPos() == pos.down() && bhit.getSide() == Direction.UP)
-      return rightClickBlock(bhit);
-    if (bhit.getBlockPos() == pos && !state.isAir() &&
-        state.getMaterial().isReplaceable())
-      return rightClickBlock(bhit);
-    return false;
+  public static BlockHitResult raycastToBlockForPlacement(BlockPos pos,
+                                                          FluidHandling f) {
+    var result = praycast(
+        new Vec3d(pos.getX() + 0.5, pos.getY() - 0.02, pos.getZ() + 0.5), f);
+    if (result.getType() == HitResult.Type.BLOCK) {
+      var bhit = (BlockHitResult)result;
+      if (bhit.getBlockPos() == pos.down() && bhit.getSide() == Direction.UP)
+        return bhit;
+    }
+    return null;
   }
 
-  private static boolean rightClickBlock(BlockHitResult h) {
-    var res = mc.interactionManager.interactBlock(mc.player, mc.world,
-                                                  Hand.MAIN_HAND, h);
+  public static boolean place(BlockHitResult hit, Hand hand) {
+    boolean wasSneaking = mc.player.input.sneaking;
+    mc.player.input.sneaking = false;
+    var res =
+        mc.interactionManager.interactBlock(mc.player, mc.world, hand, hit);
     if (res.shouldSwingHand())
-      mc.player.swingHand(Hand.MAIN_HAND);
+      mc.player.swingHand(hand);
+    mc.player.input.sneaking = wasSneaking;
     return res.isAccepted();
-  }
-
-  public static boolean tryItemUseAt(BlockPos pos) {
-    var vpos = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
-    var hit = praycast(vpos.add(0.5, 0.5, 0.5), FluidHandling.SOURCE_ONLY);
-    if (hit.getType() != HitResult.Type.BLOCK)
-      return false;
-    var bhit = (BlockHitResult)hit;
-    if (bhit.getBlockPos() != pos)
-      return false;
-    return rightClickBlock(bhit);
   }
 
   private static HitResult praycast(Vec3d v, FluidHandling f) {

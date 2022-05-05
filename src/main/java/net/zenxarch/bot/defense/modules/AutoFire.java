@@ -9,9 +9,11 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.Items;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.RaycastContext.FluidHandling;
 import net.zenxarch.bot.defense.Settings;
 import net.zenxarch.bot.util.BlockPlacementUtils;
 
@@ -99,7 +101,7 @@ public class AutoFire extends Module {
 
     if (bestPos != null) {
       pickItemSlot(slot);
-      if (BlockPlacementUtils.tryPlaceAt(bestPos)) {
+      if (simpleFlintAndSteel(bestPos)) {
         lastPos = bestPos;
         return true;
       };
@@ -110,7 +112,15 @@ public class AutoFire extends Module {
 
   private boolean simpleFlintAndSteel(LivingEntity target) {
     return canBurn(target) && pickItem(Items.FLINT_AND_STEEL) &&
-        BlockPlacementUtils.tryPlaceAt(target.getBlockPos());
+        simpleFlintAndSteel(target.getBlockPos());
+  }
+
+  private boolean simpleFlintAndSteel(BlockPos pos) {
+    var hit =
+        BlockPlacementUtils.raycastToBlockForPlacement(pos, FluidHandling.ANY);
+    if (hit == null)
+      return false;
+    return BlockPlacementUtils.place(hit, Hand.MAIN_HAND);
   }
 
   private boolean tryExtinguish() {
