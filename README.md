@@ -7,18 +7,30 @@ Baritone bot to automate early game tasks
 # ZenBot
 
 ## Usage
+
 To activate the defense modules
+
 `/zaura`
+
 To target a player
+
 `/zaura player <playername>`
+
 To change module settings
 **Currently only boolean**
+
 `/zaura setting <moduleName> <settingName> <settingValue>`
+
 To display module setting value
+
 `/zaura setting <moduleName> <settingName> `
+
 To display all settings of a module
+
 `/zaura setting <moduleName>`
+
 To display all settings of all modules
+
 `/zaura setting`
 
 > Written with [StackEdit](https://stackedit.io/).
