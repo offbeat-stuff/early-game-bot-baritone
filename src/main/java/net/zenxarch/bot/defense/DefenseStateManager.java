@@ -23,6 +23,7 @@ public class DefenseStateManager {
   public static boolean getActiveStatus() { return isDefenseActive; }
 
   public static void init() {
+    modules.add(new WaterMLG());
     modules.add(new KillAura());
     modules.add(new AutoFire());
     modules.add(new ShieldBlock());
