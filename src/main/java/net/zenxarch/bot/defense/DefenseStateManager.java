@@ -44,6 +44,8 @@ public class DefenseStateManager {
     if (checkTargets() && !tryHandleMcScreen())
       return;
 
+    modules.forEach(m -> m.preTick());
+
     var projectileTarget = TargetUtil.getNearestProjectile();
     if (projectileTarget != null) {
       modules.forEach(m -> m.handleProjectile(projectileTarget));

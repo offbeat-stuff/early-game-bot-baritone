@@ -1,6 +1,5 @@
 package net.zenxarch.bot.defense.modules;
 
-import static net.zenxarch.bot.ZenBot.mc;
 import static net.zenxarch.bot.defense.DefenseStateManager.*;
 import static net.zenxarch.bot.util.ClientPlayerHelper.*;
 
