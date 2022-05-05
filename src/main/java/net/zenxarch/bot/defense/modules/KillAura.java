@@ -11,6 +11,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.MiningToolItem;
 import net.minecraft.item.SwordItem;
+import net.zenxarch.bot.util.BaritoneUtils;
 
 public final class KillAura extends Module {
 
@@ -18,20 +19,28 @@ public final class KillAura extends Module {
 
   @Override
   public void handleHostile(MobEntity me) {
+    BaritoneUtils.pausePathing();
     if (handleCrit())
       hitLiving(me);
   }
 
   @Override
   public void handlePlayer(AbstractClientPlayerEntity pe) {
+    BaritoneUtils.pausePathing();
     if (handleCrit())
       hitLiving(pe);
   }
 
   @Override
   public void handlePassive(MobEntity me) {
+    BaritoneUtils.pausePathing();
     if (handleCrit())
       hitLiving(me);
+  }
+
+  @Override
+  public void handleNone() {
+    BaritoneUtils.resumePathing();
   }
 
   private void hitLiving(LivingEntity le) {

@@ -8,6 +8,7 @@ import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Items;
 import net.minecraft.util.hit.HitResult;
+import net.zenxarch.bot.util.BaritoneUtils;
 import net.zenxarch.bot.util.ClientPlayerHelper;
 
 public class ShieldBlock extends Module {
@@ -22,6 +23,7 @@ public class ShieldBlock extends Module {
 
   @Override
   public void handleProjectile(ProjectileEntity pe) {
+    BaritoneUtils.pausePathing();
     if (tryBlock())
       ClientPlayerHelper.lookAt(pe);
   }
