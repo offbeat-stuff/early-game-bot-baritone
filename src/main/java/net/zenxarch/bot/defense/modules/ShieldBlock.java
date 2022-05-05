@@ -59,7 +59,7 @@ public class ShieldBlock extends Module {
   }
 
   private boolean setBlocking(boolean blocking) {
-    if (wasBlocking = !blocking) {
+    if (wasBlocking ^ blocking) {
       mc.options.useKey.setPressed(blocking);
       wasBlocking = blocking;
     }

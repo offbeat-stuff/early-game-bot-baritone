@@ -16,12 +16,14 @@ public class BlockPlacementUtils {
 
   public static BlockHitResult raycastToBlockForPlacement(BlockPos pos,
                                                           FluidHandling f) {
-    var result = praycast(
-        new Vec3d(pos.getX() + 0.5, pos.getY() - 0.02, pos.getZ() + 0.5), f);
+    var vpos = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+    vpos = vpos.add(0.5, -0.02, 0.5);
+    var result = praycast(vpos, f);
     if (result.getType() == HitResult.Type.BLOCK) {
       var bhit = (BlockHitResult)result;
-      if (bhit.getBlockPos() == pos.down() && bhit.getSide() == Direction.UP)
+      if (bhit.getBlockPos() == pos.down() && bhit.getSide() == Direction.UP) {
         return bhit;
+      }
     }
     return null;
   }
