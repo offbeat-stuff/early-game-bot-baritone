@@ -5,10 +5,7 @@ import java.util.ArrayList;
 public class Settings {
   private final ArrayList<Setting<?>> settings;
 
-  public Settings() {
-    this.settings = new ArrayList<>();
-    this.settings.add(new BooleanSetting("enabled", true));
-  }
+  public Settings() { this.settings = new ArrayList<>(); }
 
   public Setting<?> get(String name) {
     for (Setting<?> setting : settings) {

@@ -80,12 +80,16 @@ public final class KillAura extends Module {
       if (mc.player.isOnGround()) {
         if (remainingTicks < 5)
           performAction(() -> {
+            var wasSneaking = mc.player.input.sneaking;
+            mc.player.input.sneaking = false;
             mc.player.jump();
+            mc.player.input.sneaking = wasSneaking;
             return true;
           });
         return false;
-      } else
-        return mc.player.fallDistance > 0;
+      } else if (mc.player.fallDistance <= 0) {
+        return false;
+      };
     }
     return remainingTicks <= 0;
   }

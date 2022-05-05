@@ -25,6 +25,8 @@ public class WaterMLG extends Module {
       return;
 
     var blocks = getBlocksUntilLanding();
+    if (blocks == -1 || blocks == 10)
+      return;
     if (mc.player.fallDistance + blocks < 3)
       return;
 

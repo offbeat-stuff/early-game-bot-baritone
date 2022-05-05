@@ -4,6 +4,7 @@ import static net.zenxarch.bot.ZenBot.mc;
 
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.zenxarch.bot.defense.modules.*;
 import net.zenxarch.bot.defense.modules.Module;
@@ -36,42 +37,61 @@ public class DefenseStateManager {
         TargetUtil.getNearestProjectile() == null;
   }
 
+  private static boolean allInactive() {
+    for (var module : modules) {
+      if (module.isActive())
+        return false;
+    }
+    return true;
+  }
+
   public static void preTick() {
     if (!isDefenseActive)
       return;
     isActionPerformed = false;
 
+    if (allInactive())
+      return;
+
     TargetUtil.updateTargets();
     if (checkTargets() && !tryHandleMcScreen())
       return;
 
-    modules.forEach(m -> m.preTick());
+    forEachModule(m -> m.preTick());
 
     var projectileTarget = TargetUtil.getNearestProjectile();
     if (projectileTarget != null) {
-      modules.forEach(m -> m.handleProjectile(projectileTarget));
+      forEachModule(m -> m.handleProjectile(projectileTarget));
       return;
     }
 
     var hostileTarget = TargetUtil.getNearestHostile();
     if (hostileTarget != null) {
-      modules.forEach(m -> m.handleHostile(hostileTarget));
+      forEachModule(m -> m.handleHostile(hostileTarget));
       return;
     }
 
     var playerTarget = TargetUtil.getNearestEnemyPlayer();
     if (playerTarget != null) {
-      modules.forEach(m -> m.handlePlayer(playerTarget));
+      forEachModule(m -> m.handlePlayer(playerTarget));
       return;
     }
 
     var passiveTarget = TargetUtil.getNearestPassive();
     if (passiveTarget != null) {
-      modules.forEach(m -> m.handlePassive(passiveTarget));
+      forEachModule(m -> m.handlePassive(passiveTarget));
       return;
     }
 
-    modules.forEach(m -> m.handleNone());
+    forEachModule(m -> m.handleNone());
+  }
+
+  private static void forEachModule(Consumer<? super Module> exec) {
+    for (var module : modules) {
+      if (module.isActive()) {
+        exec.accept(module);
+      }
+    }
   }
 
   public static ArrayList<Module> getModules() { return modules; }
