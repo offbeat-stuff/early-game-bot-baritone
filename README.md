@@ -33,4 +33,14 @@ To display all settings of all modules
 
 `/zaura setting`
 
+### Current Modules
+
+- Auto Water MLG (needs water bucket or powder snow bucket)
+
+- Kill Aura
+
+- Auto Fire (needs flint and steel)
+
+- Shield Block (Disable when shooting arrows)
+
 > Written with [StackEdit](https://stackedit.io/).
