@@ -5,16 +5,16 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.zenxarch.bot.defense.Settings;
-import net.zenxarch.bot.defense.Settings.BooleanSetting;
+import net.zenxarch.bot.defense.Settings.Type;
 
 public class Module {
-  protected Settings settings;
   public static final MinecraftClient mc = MinecraftClient.getInstance();
   private String name;
 
   public Module(String name) {
-    this.settings = new Settings();
-    this.settings.addSetting(new BooleanSetting("enabled", true));
+    Settings.registerModule(name);
+    Settings.registerSetting(name, "enabled", Type.Bool);
+    Settings.execute(name + ".enabled=true");
     this.name = name;
   }
 
@@ -25,15 +25,9 @@ public class Module {
   public void handlePlayer(AbstractClientPlayerEntity pe){};
   public void handlePassive(MobEntity me){};
 
-  public Settings.Setting<?> getSetting(String name) {
-    return settings.get(name);
-  }
-
   public boolean isActive() {
-    return ((BooleanSetting)getSetting("enabled")).get();
+    return Settings.getBoolean(this.name + ".enabled");
   }
-
-  public Settings getSettings() { return settings; }
 
   public String getName() { return name; }
 }

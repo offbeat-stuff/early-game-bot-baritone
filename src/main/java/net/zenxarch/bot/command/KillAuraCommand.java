@@ -1,6 +1,5 @@
 package net.zenxarch.bot.command;
 
-import static com.mojang.brigadier.arguments.BoolArgumentType.*;
 import static com.mojang.brigadier.arguments.StringArgumentType.*;
 import static net.fabricmc.fabric.api.client.command.v1.ClientCommandManager.*;
 import static net.minecraft.command.CommandSource.suggestMatching;
@@ -12,9 +11,7 @@ import java.util.ArrayList;
 import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
 import net.minecraft.text.LiteralText;
 import net.zenxarch.bot.defense.DefenseStateManager;
-import net.zenxarch.bot.defense.Settings.BooleanSetting;
-import net.zenxarch.bot.defense.Settings.Setting;
-import net.zenxarch.bot.defense.modules.Module;
+import net.zenxarch.bot.defense.Settings;
 import net.zenxarch.bot.util.TargetUtil;
 
 public class KillAuraCommand {
@@ -29,31 +26,13 @@ public class KillAuraCommand {
 
   private static LiteralArgumentBuilder<FabricClientCommandSource>
   generateSettings() {
-    var m = "ModuleName";
-    var s = "SettingName";
-    var v = "SettingValue";
-    var sv = argument(v, bool()).executes(ctx
-                                          -> handleArgs(ctx, getString(ctx, m),
-                                                        getString(ctx, s), true,
-                                                        getBool(ctx, v)));
-    var sc = argument(s, word())
-                 .suggests((c, b) -> suggestMatching(getSettings(c, m), b))
-                 .then(sv)
-                 .executes(ctx
-                           -> handleArgs(ctx, getString(ctx, m),
-                                         getString(ctx, s), false, false));
-    var mc =
-        argument(m, word())
-            .suggests((c, b) -> suggestMatching(getModules(), b))
-            .then(sc)
-            .executes(
-                ctx -> handleArgs(ctx, getString(ctx, m), "", false, false));
-    return literal("setting").then(mc).executes(ctx -> {
-      for (var module : DefenseStateManager.getModules()) {
-        echoModuleSettings(ctx, module);
-      }
-      return 0;
-    });
+    return literal("setting").then(argument("setting", word())
+                                       .suggests((c, b) -> Settings.suggest(b))
+                                       .executes(ctx -> {
+                                         Settings.execute(
+                                             getString(ctx, "setting"));
+                                         return 0;
+                                       }));
   }
 
   private static LiteralArgumentBuilder<FabricClientCommandSource>
@@ -91,63 +70,8 @@ public class KillAuraCommand {
     return 0;
   }
 
-  private static int handleArgs(CommandContext<FabricClientCommandSource> ctx,
-                                String moduleName, String settingName,
-                                boolean valueGiven, boolean value) {
-    var module = DefenseStateManager.getModule(moduleName);
-    if (module == null)
-      return 1;
-    if (settingName == "") {
-      echoModuleSettings(ctx, module);
-      return 0;
-    }
-
-    var setting = module.getSetting(settingName);
-    if (!valueGiven) {
-      echoSettingValue(ctx, setting);
-      return 0;
-    }
-
-    if (setting instanceof BooleanSetting bs) {
-      bs.set(value);
-    }
-    return 0;
-  }
-
-  private static void
-  echoModuleSettings(CommandContext<FabricClientCommandSource> ctx,
-                     Module module) {
-    for (var setting : module.getSettings().getSettings()) {
-      echoSettingValue(ctx, module.getSetting(setting));
-    }
-  }
-
-  private static void
-  echoSettingValue(CommandContext<FabricClientCommandSource> ctx,
-                   Setting<?> setting) {
-    sendMessage(ctx, setting.getName() + " : " + setting.get());
-  }
-
   private static void sendMessage(CommandContext<FabricClientCommandSource> ctx,
                                   String message) {
     ctx.getSource().sendFeedback(new LiteralText(message));
-  }
-
-  private static ArrayList<String> getModules() {
-    var result = new ArrayList<String>();
-    for (var module : DefenseStateManager.getModules()) {
-      result.add(module.getName());
-    }
-    return result;
-  }
-
-  private static ArrayList<String> getSettings(CommandContext<?> source,
-                                               String m) {
-    var moduleName = getString(source, m);
-    var module = DefenseStateManager.getModule(moduleName);
-    if (module != null) {
-      return module.getSettings().getSettings();
-    }
-    return new ArrayList<String>();
   }
 }

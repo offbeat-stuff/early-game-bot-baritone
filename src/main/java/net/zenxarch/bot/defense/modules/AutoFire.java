@@ -21,8 +21,8 @@ public class AutoFire extends Module {
 
   public AutoFire() {
     super("AutoFire");
-    this.settings.addSetting(
-        new Settings.BooleanSetting("shouldUseComplexMethod", true));
+    Settings.registerSetting(this.getName(), "complexmethod",
+                             Settings.Type.Bool);
   }
 
   @Override
@@ -57,11 +57,7 @@ public class AutoFire extends Module {
   }
 
   private boolean shouldUseComplexMethod() {
-    if (settings.get("shouldUseComplexMethod") instanceof
-        Settings.BooleanSetting bs) {
-      return bs.get();
-    }
-    return false;
+    return Settings.getBoolean(this.getName().toLowerCase() + ".complexmethod");
   }
 
   private boolean canBurn(LivingEntity target) {
