@@ -96,10 +96,10 @@ public final class KillAura extends Module {
             return true;
           });
         return false;
-      } else if (mc.player.fallDistance <= 0) {
+      } else if (mc.player.getVelocity().y > 0) {
         return false;
       };
     }
-    return remainingTicks <= 0;
+    return remainingTicks <= 1;
   }
 }
