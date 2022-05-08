@@ -20,7 +20,7 @@ public class Settings {
 
   public static void registerSetting(String module, String setting, Type type) {
     if (modules.contains(cleanup(module))) {
-      settingsMap.put(cleanup(module) + "." + cleanup(module),
+      settingsMap.put(cleanup(module) + "." + cleanup(setting),
                       new BoolSetting());
     }
   }
@@ -113,7 +113,7 @@ public class Settings {
     var result = "";
     for (int i = 0; i < s.length(); i++) {
       if (test.test(s.charAt(i)))
-        result += Character.toLowerCase(s.charAt(i));
+        result = result + Character.toLowerCase(s.charAt(i));
     }
     return result;
   }
