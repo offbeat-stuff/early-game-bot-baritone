@@ -57,7 +57,7 @@ public class AutoFire extends Module {
   }
 
   private boolean shouldUseComplexMethod() {
-    return Settings.getBoolean(this.getName().toLowerCase() + ".complexmethod");
+    return Settings.getBoolean(this.getName() + ".complexmethod");
   }
 
   private boolean canBurn(LivingEntity target) {

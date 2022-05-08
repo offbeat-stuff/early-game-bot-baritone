@@ -14,7 +14,7 @@ public class Module {
   public Module(String name) {
     Settings.registerModule(name);
     Settings.registerSetting(name, "enabled", Type.Bool);
-    Settings.execute(name + ".enabled=true");
+    Settings.execute(name + ".enabled.true");
     this.name = name;
   }
 

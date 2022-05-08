@@ -26,13 +26,15 @@ public class KillAuraCommand {
 
   private static LiteralArgumentBuilder<FabricClientCommandSource>
   generateSettings() {
-    return literal("setting").then(argument("setting", string())
-                                       .suggests((c, b) -> Settings.suggest(b))
-                                       .executes(ctx -> {
-                                         Settings.execute(
-                                             getString(ctx, "setting"));
-                                         return 0;
-                                       }));
+    return literal("setting").then(
+        argument("setting", string())
+            .suggests((c, b) -> Settings.suggest(b))
+            .executes(ctx -> {
+              Settings.exec(getString(ctx, "setting")).forEach(s -> {
+                sendMessage(ctx, s);
+              });
+              return 0;
+            }));
   }
 
   private static LiteralArgumentBuilder<FabricClientCommandSource>

@@ -15,20 +15,21 @@ public class Settings {
   private static final ArrayList<String> modules = new ArrayList<>();
 
   public static void registerModule(String module) {
-    modules.add(module.toLowerCase());
+    modules.add(cleanup(module));
   }
 
   public static void registerSetting(String module, String setting, Type type) {
-    if (modules.contains(module.toLowerCase())) {
-      settingsMap.put(module.toLowerCase() + "." + setting.toLowerCase(),
+    if (modules.contains(cleanup(module))) {
+      settingsMap.put(cleanup(module) + "." + cleanup(module),
                       new BoolSetting());
     }
   }
 
   public static boolean getBoolean(String identifier) {
-    if (settingsMap.containsKey(identifier) &&
-        settingsMap.get(identifier).type == Type.Bool) {
-      return ((BoolSetting)settingsMap.get(identifier)).get();
+    var s = parse(identifier);
+    var n = s[0] + "." + s[1];
+    if (settingsMap.containsKey(n) && settingsMap.get(n).type == Type.Bool) {
+      return ((BoolSetting)settingsMap.get(n)).get();
     }
     return false;
   }
@@ -38,6 +39,29 @@ public class Settings {
     if (settingsMap.containsKey(s[0] + "." + s[1])) {
       settingsMap.get(s[0] + "." + s[1]).accept(s[2]);
     }
+  }
+
+  public static List<String> exec(String str) {
+    var s = parse(str);
+    var result = new ArrayList<String>();
+    if (s[0] == "") {
+      settingsMap.forEach((k, v) -> { result.add(k + " = " + v.get()); });
+    } else if (s[1] == "") {
+      settingsMap.forEach((k, v) -> {
+        if (k.startsWith(s[0])) {
+          result.add(k + " = " + v.get());
+        }
+      });
+    } else {
+      var n = s[0] + "." + s[1];
+      if (s[2] != "") {
+        execute(str);
+      }
+      if (settingsMap.containsKey(n)) {
+        result.add(n + " = " + settingsMap.get(n).get());
+      }
+    }
+    return result;
   }
 
   public static CompletableFuture<Suggestions>
@@ -59,7 +83,7 @@ public class Settings {
         perfectMatch = true;
       } else if (settingsMap.keySet().contains(mod + "." + set)) {
         settingsMap.get(mod + "." + set).suggest(val).forEach(s -> {
-          builder.suggest(mod + "." + set + "=" + s);
+          builder.suggest(mod + "." + set + "." + s);
         });
         perfectMatch = true;
       }
@@ -77,7 +101,7 @@ public class Settings {
         settingsMap.keySet().forEach(s -> {
           if (s.startsWith(mod + "." + set)) {
             builder.suggest(s);
-            builder.suggest(s + "=");
+            builder.suggest(s + ".");
           }
         });
       }
@@ -100,7 +124,7 @@ public class Settings {
 
   private static String[] parse(String s) {
     var a = split(s, '.');
-    var b = split(a[1], '=');
+    var b = split(a[1], '.');
     return new String[] {cleanup(a[0]), cleanup(b[0]),
                          cleanup(b[1], Character::isLetterOrDigit)};
   }
