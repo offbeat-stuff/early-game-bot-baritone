@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
+import net.minecraft.util.math.MathHelper;
 
 public class Settings {
   private static final Map<String, Setting<?>> settingsMap = new HashMap<>();
@@ -32,6 +33,15 @@ public class Settings {
       return ((BoolSetting)settingsMap.get(n)).get();
     }
     return false;
+  }
+
+  public static int getInt(String identifier) {
+    var s = parse(identifier);
+    var n = s[0] + "." + s[1];
+    if (settingsMap.containsKey(n) && settingsMap.get(n).type == Type.Int) {
+      return ((IntSetting)settingsMap.get(n)).get();
+    }
+    return 0;
   }
 
   public static void execute(String str) {
@@ -173,11 +183,41 @@ public class Settings {
 
     @Override
     public List<String> suggest(String input) {
-      var list = List.of("true", "false", "toggle");
-      list.removeIf((s) -> !s.startsWith(input));
-      return list;
+      return List.of("true", "false", "toggle")
+          .stream()
+          .filter(s -> s.startsWith(input))
+          .toList();
     }
   }
 
-  public enum Type { Bool,Int }
+  public static class IntSetting extends Setting<Integer> {
+    private final ArrayList<String> suggestions = new ArrayList<>();
+    private int min, max;
+
+    public IntSetting(List<Integer> suggestions, int min, int max) {
+      super(Type.Int);
+      this.set(0);
+      this.min = min;
+      this.max = max;
+      suggestions.forEach(i -> { this.suggestions.add(String.valueOf(i)); });
+    }
+
+    @Override
+    public boolean accept(String s) {
+      try {
+        var i = Integer.parseInt(s);
+        this.set(MathHelper.clamp(i, min, max));
+        return true;
+      } catch (Exception e) {
+        return false;
+      }
+    }
+
+    @Override
+    public List<String> suggest(String input) {
+      return suggestions.stream().filter(s -> s.startsWith(input)).toList();
+    }
+  }
+
+  public enum Type { Bool, Int }
 }
