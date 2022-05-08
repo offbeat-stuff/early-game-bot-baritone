@@ -5,7 +5,6 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.zenxarch.bot.defense.Settings;
-import net.zenxarch.bot.defense.Settings.Type;
 
 public class Module {
   public static final MinecraftClient mc = MinecraftClient.getInstance();
@@ -13,8 +12,7 @@ public class Module {
 
   public Module(String name) {
     Settings.registerModule(name);
-    Settings.registerSetting(name, "enabled", Type.Bool);
-    Settings.execute(name + ".enabled.true");
+    Settings.registerBoolSetting(name, "enabled", true);
     this.name = name;
   }
 

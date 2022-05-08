@@ -21,8 +21,8 @@ public class AutoFire extends Module {
 
   public AutoFire() {
     super("AutoFire");
-    Settings.registerSetting(this.getName(), "complexmethod",
-                             Settings.Type.Bool);
+    Settings.registerBoolSetting(this.getName(), "complexmethod",
+                             false);
   }
 
   @Override
