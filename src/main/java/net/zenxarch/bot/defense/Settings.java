@@ -19,11 +19,21 @@ public class Settings {
     modules.add(cleanup(module));
   }
 
-  public static void registerSetting(String module, String setting, Type type) {
-    if (modules.contains(cleanup(module))) {
-      settingsMap.put(cleanup(module) + "." + cleanup(setting),
-                      new BoolSetting());
-    }
+  public static void registerBoolSetting(String module, String setting,
+                                         boolean value) {
+    if (!modules.contains(cleanup(module)))
+      return;
+    var n = cleanup(module) + "." + cleanup(setting);
+    settingsMap.put(n, new BoolSetting(value));
+  }
+
+  public static void registerIntSetting(String module, String setting,
+                                        int value, int min, int max,
+                                        List<Integer> suggestions) {
+    if (!modules.contains(cleanup(module)))
+      return;
+    var n = cleanup(module) + "." + cleanup(setting);
+    settingsMap.put(n, new IntSetting(value, min, max, suggestions));
   }
 
   public static boolean getBoolean(String identifier) {
@@ -160,9 +170,9 @@ public class Settings {
 
   public static class BoolSetting extends Setting<Boolean> {
 
-    public BoolSetting() {
+    public BoolSetting(boolean value) {
       super(Type.Bool);
-      this.set(false);
+      this.set(value);
     }
 
     @Override
@@ -194,9 +204,9 @@ public class Settings {
     private final ArrayList<String> suggestions = new ArrayList<>();
     private int min, max;
 
-    public IntSetting(List<Integer> suggestions, int min, int max) {
+    public IntSetting(int value, int min, int max, List<Integer> suggestions) {
       super(Type.Int);
-      this.set(0);
+      this.set(value);
       this.min = min;
       this.max = max;
       suggestions.forEach(i -> { this.suggestions.add(String.valueOf(i)); });

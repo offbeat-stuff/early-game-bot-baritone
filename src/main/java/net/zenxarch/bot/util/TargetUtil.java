@@ -22,6 +22,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.RaycastContext.FluidHandling;
 import net.minecraft.world.RaycastContext.ShapeType;
+import net.zenxarch.bot.defense.Settings;
 import net.zenxarch.bot.mixin.ProjectileEntityAccessor;
 
 public class TargetUtil {
@@ -54,6 +55,8 @@ public class TargetUtil {
 
   private static ArrayList<String> playerUsernameStrings =
       new ArrayList<String>();
+
+  public static void init() { Settings.registerModule("targets"); }
 
   public static void updateTargets() {
     hostileTarget = null;
