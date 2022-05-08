@@ -150,7 +150,10 @@ public class Settings {
 
   public static class BoolSetting extends Setting<Boolean> {
 
-    public BoolSetting() { super(Type.Bool); }
+    public BoolSetting() {
+      super(Type.Bool);
+      this.set(false);
+    }
 
     @Override
     public boolean accept(String s) {
@@ -176,5 +179,5 @@ public class Settings {
     }
   }
 
-  public enum Type { Bool }
+  public enum Type { Bool,Int }
 }
