@@ -26,7 +26,7 @@ public class KillAuraCommand {
 
   private static LiteralArgumentBuilder<FabricClientCommandSource>
   generateSettings() {
-    return literal("setting").then(argument("setting", word())
+    return literal("setting").then(argument("setting", string())
                                        .suggests((c, b) -> Settings.suggest(b))
                                        .executes(ctx -> {
                                          Settings.execute(

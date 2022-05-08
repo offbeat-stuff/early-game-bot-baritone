@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 
 public class Settings {
   private static final Map<String, Setting<?>> settingsMap = new HashMap<>();
@@ -32,63 +33,82 @@ public class Settings {
     return false;
   }
 
-  public static void execute(String s) {
-    var a = s.indexOf('.');
-    var b = s.indexOf('=');
-    if (a == -1 || b < a)
-      return;
-    var moduleName = toWord(s.substring(0, a));
-    var settingName = toWord(s.substring(a + 1, b));
-    var settingValue = s.substring(b + 1);
-    var instance = settingsMap.get(moduleName + "." + settingName);
-    if (instance == null)
-      return;
-    instance.accept(settingValue);
+  public static void execute(String str) {
+    var s = parse(str);
+    if (settingsMap.containsKey(s[0] + "." + s[1])) {
+      settingsMap.get(s[0] + "." + s[1]).accept(s[2]);
+    }
   }
 
   public static CompletableFuture<Suggestions>
   suggest(SuggestionsBuilder builder) {
-    var string = builder.getRemaining();
-    var a = string.indexOf('a');
-    var b = string.indexOf('b');
-    if (a == -1) {
-      var word = toWord(string);
-      for (var mod : modules) {
-        if (mod.startsWith(word))
-          builder.suggest(mod);
+    var strings = parse(builder.getRemaining());
+    var mod = strings[0];
+    var set = strings[1];
+    var val = strings[2];
+
+    var perfectMatch = false;
+
+    if (modules.contains(mod)) {
+      if (set == "") {
+        settingsMap.keySet().forEach(ss -> {
+          if (ss.startsWith(mod + ".")) {
+            builder.suggest(ss);
+          }
+        });
+        perfectMatch = true;
+      } else if (settingsMap.keySet().contains(mod + "." + set)) {
+        settingsMap.get(mod + "." + set).suggest(val).forEach(s -> {
+          builder.suggest(mod + "." + set + "=" + s);
+        });
+        perfectMatch = true;
       }
-    } else if (b == -1) {
-      var mod = toWord(string.substring(0, a));
-      var set = toWord(string.substring(a + 1));
-      for (var s : settingsMap.keySet()) {
-        if (s.startsWith(mod + "." + set))
-          builder.suggest(s);
-      }
-    } else if (a < b) {
-      var mod = toWord(string.substring(0, a));
-      var set = toWord(string.substring(a + 1, b));
-      var val = string.substring(b);
-      var instance = settingsMap.get(mod + "." + set);
-      if (instance != null) {
-        for (var v : instance.suggest(val)) {
-          builder.suggest(mod + "." + set + "=" + v);
-        };
+    }
+
+    if (!perfectMatch) {
+      if (set == "") {
+        modules.forEach(m -> {
+          if (m.startsWith(mod)) {
+            builder.suggest(mod);
+            builder.suggest(mod + ".");
+          }
+        });
+      } else {
+        settingsMap.keySet().forEach(s -> {
+          if (s.startsWith(mod + "." + set)) {
+            builder.suggest(s);
+            builder.suggest(s + "=");
+          }
+        });
       }
     }
     return builder.buildFuture();
   }
 
-  private static String toWord(String s) {
-    String result = "";
+  private static String cleanup(String s, Predicate<Character> test) {
+    var result = "";
     for (int i = 0; i < s.length(); i++) {
-      var ch = s.charAt(i);
-      if (ch >= 'a' && ch <= 'z') {
-        result += ch;
-      } else if (ch >= 'A' && ch <= 'Z') {
-        result += ch - ('A' - 'a');
-      }
+      if (test.test(s.charAt(i)))
+        result += Character.toLowerCase(s.charAt(i));
     }
     return result;
+  }
+
+  private static String cleanup(String s) {
+    return cleanup(s, Character::isLetter);
+  }
+
+  private static String[] parse(String s) {
+    var a = split(s, '.');
+    var b = split(a[1], '=');
+    return new String[] {cleanup(a[0]), cleanup(b[0]),
+                         cleanup(b[1], Character::isLetterOrDigit)};
+  }
+
+  private static String[] split(String s, char delimiter) {
+    var a = s.indexOf(delimiter);
+    return a == -1 ? new String[] {s, ""}
+                   : new String[] {s.substring(0, a), s.substring(a + 1)};
   }
 
   public static abstract class Setting<T> {
