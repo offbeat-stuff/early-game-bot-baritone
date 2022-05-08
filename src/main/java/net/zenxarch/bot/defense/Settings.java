@@ -27,13 +27,13 @@ public class Settings {
     settingsMap.put(n, new BoolSetting(value));
   }
 
-  public static void registerIntSetting(String module, String setting,
-                                        int value, int min, int max,
-                                        List<Integer> suggestions) {
+  public static void registerDoubleSetting(String module, String setting,
+                                           double value, double min, double max,
+                                           List<Double> suggestions) {
     if (!modules.contains(cleanup(module)))
       return;
     var n = cleanup(module) + "." + cleanup(setting);
-    settingsMap.put(n, new IntSetting(value, min, max, suggestions));
+    settingsMap.put(n, new DoubleSetting(value, min, max, suggestions));
   }
 
   public static boolean getBoolean(String identifier) {
@@ -45,11 +45,11 @@ public class Settings {
     return false;
   }
 
-  public static int getInt(String identifier) {
+  public static double getDouble(String identifier) {
     var s = parse(identifier);
     var n = s[0] + "." + s[1];
-    if (settingsMap.containsKey(n) && settingsMap.get(n).type == Type.Int) {
-      return ((IntSetting)settingsMap.get(n)).get();
+    if (settingsMap.containsKey(n) && settingsMap.get(n).type == Type.Double) {
+      return ((DoubleSetting)settingsMap.get(n)).get();
     }
     return 0;
   }
@@ -200,12 +200,13 @@ public class Settings {
     }
   }
 
-  public static class IntSetting extends Setting<Integer> {
+  public static class DoubleSetting extends Setting<Double> {
     private final ArrayList<String> suggestions = new ArrayList<>();
-    private int min, max;
+    private double min, max;
 
-    public IntSetting(int value, int min, int max, List<Integer> suggestions) {
-      super(Type.Int);
+    public DoubleSetting(double value, double min, double max,
+                         List<Double> suggestions) {
+      super(Type.Double);
       this.set(value);
       this.min = min;
       this.max = max;
@@ -215,7 +216,7 @@ public class Settings {
     @Override
     public boolean accept(String s) {
       try {
-        var i = Integer.parseInt(s);
+        var i = Double.parseDouble(s);
         this.set(MathHelper.clamp(i, min, max));
         return true;
       } catch (Exception e) {
@@ -229,5 +230,5 @@ public class Settings {
     }
   }
 
-  public enum Type { Bool, Int }
+  public enum Type { Bool, Double }
 }

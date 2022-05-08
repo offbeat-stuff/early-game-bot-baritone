@@ -3,6 +3,7 @@ package net.zenxarch.bot.util;
 import static net.zenxarch.bot.util.ProjectileEntitySimulator.*;
 
 import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.Entity;
@@ -56,7 +57,11 @@ public class TargetUtil {
   private static ArrayList<String> playerUsernameStrings =
       new ArrayList<String>();
 
-  public static void init() { Settings.registerModule("targets"); }
+  public static void init() {
+    Settings.registerModule("targets");
+    Settings.registerDoubleSetting("targets", "maxReach", 4.5, 0, 4.5,
+                                   List.of(3.5, 4.5));
+  }
 
   public static void updateTargets() {
     hostileTarget = null;
