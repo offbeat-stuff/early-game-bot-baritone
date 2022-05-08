@@ -61,14 +61,24 @@ public class TargetUtil {
     Settings.registerModule("targets");
     Settings.registerDoubleSetting("targets", "maxReach", 4.5, 0, 4.5,
                                    List.of(3.5, 4.5));
+    Settings.registerBoolSetting("targets", "ignorePassive", false);
+  }
+
+  private static boolean ignorePassive() {
+    return Settings.getBoolean("targets.ignorePassive");
+  }
+
+  private static double maxReach() {
+    return Settings.getDouble("targets.maxReach");
   }
 
   public static void updateTargets() {
+    var reach = maxReach();
     hostileTarget = null;
     passiveTarget = null;
     projectileTarget = null;
-    double hostileDist = 4.5 * 4.5;
-    double passiveDist = 4.5 * 4.5;
+    double hostileDist = reach * reach;
+    double passiveDist = reach * reach;
     int projectileTicks = 16;
     for (Entity e : mc.world.getEntities()) {
       if (e == null || !e.isAlive())
@@ -81,14 +91,14 @@ public class TargetUtil {
         if (checkHostile(mob)) {
           hostileDist = handleHostile(mob, hostileDist);
         }
-        if (checkPassive(mob)) {
+        if (!ignorePassive() && checkPassive(mob)) {
           passiveDist = handlePassive(mob, passiveDist);
         }
       }
     }
     // find nearest enemy player
     playerTarget = null;
-    var playerDistance = 4.1 * 4.1;
+    var playerDistance = reach * reach;
     for (AbstractClientPlayerEntity p : mc.world.getPlayers()) {
       if (!checkPlayer(p))
         continue;
