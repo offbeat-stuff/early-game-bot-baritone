@@ -49,10 +49,10 @@ public class AutoFire extends Module {
       return;
     lastPos = null;
 
-    if (shouldUseComplexMethod())
-      performAction(() -> canBurn(target) && complexFlintAndSteel(target));
-    else if (performAction(() -> simpleFlintAndSteel(target)))
-      lastPos = target.getBlockPos();
+    performAction(()
+                      -> shouldUseComplexMethod()
+                             ? complexFlintAndSteel(target)
+                             : simpleFlintAndSteel(target));
   }
 
   private boolean shouldUseComplexMethod() {
@@ -69,6 +69,8 @@ public class AutoFire extends Module {
   }
 
   private boolean complexFlintAndSteel(LivingEntity target) {
+    if (!canBurn(target))
+      return false;
     var slot = findInInventory(Items.FLINT_AND_STEEL);
     if (slot == -1)
       return false;

@@ -29,13 +29,10 @@ public class BlockPlacementUtils {
   }
 
   public static boolean place(BlockHitResult hit, Hand hand) {
-    boolean wasSneaking = mc.player.input.sneaking;
-    mc.player.input.sneaking = false;
     var res =
         mc.interactionManager.interactBlock(mc.player, mc.world, hand, hit);
     if (res.shouldSwingHand())
       mc.player.swingHand(hand);
-    mc.player.input.sneaking = wasSneaking;
     return res.isAccepted();
   }
 
