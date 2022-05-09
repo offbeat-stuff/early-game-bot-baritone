@@ -113,8 +113,8 @@ public class Settings {
       if (set == "") {
         modules.forEach(m -> {
           if (m.startsWith(mod)) {
-            builder.suggest(mod);
-            builder.suggest(mod + ".");
+            builder.suggest(m);
+            builder.suggest(m + ".");
           }
         });
       } else {

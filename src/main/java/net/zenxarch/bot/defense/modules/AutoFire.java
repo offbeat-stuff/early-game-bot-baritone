@@ -95,10 +95,7 @@ public class AutoFire extends Module {
 
     if (bestPos != null) {
       pickItemSlot(slot);
-      if (simpleFlintAndSteel(bestPos)) {
-        lastPos = bestPos;
-        return true;
-      };
+      return simpleFlintAndSteel(bestPos);
     }
 
     return false;
@@ -112,15 +109,17 @@ public class AutoFire extends Module {
   private boolean simpleFlintAndSteel(BlockPos pos) {
     var hit =
         BlockPlacementUtils.raycastToBlockForPlacement(pos, FluidHandling.ANY);
-    if (hit == null)
-      return false;
-    return BlockPlacementUtils.place(hit, Hand.MAIN_HAND);
+    if (hit != null && BlockPlacementUtils.place(hit, Hand.MAIN_HAND)) {
+      lastPos = pos;
+      return true;
+    };
+    return false;
   }
 
   private boolean tryExtinguish() {
     if (lastPos != null && mc.world.getBlockState(lastPos).getBlock() instanceof
                                AbstractFireBlock) {
-      mc.interactionManager.attackBlock(lastPos.down(), Direction.UP);
+      mc.interactionManager.attackBlock(lastPos, Direction.UP);
       return true;
     }
     return false;
