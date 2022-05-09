@@ -64,9 +64,9 @@ public class Settings {
   public static List<String> exec(String str) {
     var s = parse(str);
     var result = new ArrayList<String>();
-    if (s[0] == "") {
+    if (s[0].isEmpty()) {
       settingsMap.forEach((k, v) -> { result.add(k + " = " + v.get()); });
-    } else if (s[1] == "") {
+    } else if (s[1].isEmpty()) {
       settingsMap.forEach((k, v) -> {
         if (k.startsWith(s[0])) {
           result.add(k + " = " + v.get());
@@ -74,7 +74,7 @@ public class Settings {
       });
     } else {
       var n = s[0] + "." + s[1];
-      if (s[2] != "") {
+      if (!s[2].isEmpty()) {
         execute(str);
       }
       if (settingsMap.containsKey(n)) {
@@ -94,7 +94,7 @@ public class Settings {
     var perfectMatch = false;
 
     if (modules.contains(mod)) {
-      if (set == "") {
+      if (set.isEmpty()) {
         settingsMap.keySet().forEach(ss -> {
           if (ss.startsWith(mod + ".")) {
             builder.suggest(ss);
@@ -110,7 +110,7 @@ public class Settings {
     }
 
     if (!perfectMatch) {
-      if (set == "") {
+      if (set.isEmpty()) {
         modules.forEach(m -> {
           if (m.startsWith(mod)) {
             builder.suggest(m);

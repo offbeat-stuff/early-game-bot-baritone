@@ -95,17 +95,6 @@ public class DefenseStateManager {
     }
   }
 
-  public static ArrayList<Module> getModules() { return modules; }
-
-  public static Module getModule(String name) {
-    for (var module : modules) {
-      if (module.getName() == name) {
-        return module;
-      }
-    }
-    return null;
-  }
-
   public static boolean postTickCheck() { return isActionPerformed; }
 
   public static boolean performAction(BooleanSupplier action) {

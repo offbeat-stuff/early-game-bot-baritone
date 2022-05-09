@@ -21,7 +21,8 @@ public class BlockPlacementUtils {
     var result = praycast(vpos, f);
     if (result.getType() == HitResult.Type.BLOCK) {
       var bhit = (BlockHitResult)result;
-      if (bhit.getBlockPos() == pos.down() && bhit.getSide() == Direction.UP) {
+      if (bhit.getBlockPos().equals(pos.down()) &&
+          bhit.getSide() == Direction.UP) {
         return bhit;
       }
     }
