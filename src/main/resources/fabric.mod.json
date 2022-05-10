@@ -25,8 +25,7 @@
     "fabric": "*",
     "minecraft": ">=${minecraft_version} <=${supported_minecraft_version}",
     "java": ">=17",
-    "baritone": ">=${baritone_version}",
-    "clientarguments": ">=${clientarguments_version}"
+    "baritone": ">=${baritone_version}"
   },
   "suggests": {
   }
