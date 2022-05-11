@@ -1,16 +1,16 @@
 package net.zenxarch.bot.defense;
 
-import static net.zenxarch.bot.ZenBot.mc;
-
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.zenxarch.bot.defense.modules.*;
 import net.zenxarch.bot.defense.modules.Module;
 import net.zenxarch.bot.util.TargetUtil;
 
 public class DefenseStateManager {
+  private static final MinecraftClient mc = MinecraftClient.getInstance();
   private static boolean isDefenseActive;
   private static boolean isActionPerformed;
   private static final ArrayList<Module> modules = new ArrayList<>();

@@ -15,7 +15,12 @@
 
   "environment": "client",
   "entrypoints": {
-    "client":["net.zenxarch.bot.ZenBot"]
+    "client":[
+      { 
+        "adapter" : "scala",
+        "value" : "net.zenxarch.bot.ZenBot"
+      }
+    ]
   },
   "mixins": [
     "zenbot.mixins.json"

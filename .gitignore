@@ -5,6 +5,9 @@ build/
 out/
 classes/
 
+.metals/
+.bloop/
+
 # eclipse
 
 *.launch

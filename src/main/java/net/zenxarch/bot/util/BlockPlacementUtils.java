@@ -1,7 +1,6 @@
 package net.zenxarch.bot.util;
 
-import static net.zenxarch.bot.ZenBot.mc;
-
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -13,6 +12,7 @@ import net.minecraft.world.RaycastContext.FluidHandling;
 import net.minecraft.world.RaycastContext.ShapeType;
 
 public class BlockPlacementUtils {
+  private static final MinecraftClient mc = MinecraftClient.getInstance();
 
   public static BlockHitResult raycastToBlockForPlacement(BlockPos pos,
                                                           FluidHandling f) {
