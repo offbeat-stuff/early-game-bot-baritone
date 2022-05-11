@@ -78,11 +78,11 @@ public class ClientPlayerHelper {
   public static int findInInventory(Item item) {
     var inv = mc.player.getInventory();
     for (int i = 0; i < inv.main.size(); i++) {
-      if (inv.main.get(i).getItem().equals(item)) {
+      if (inv.main.get(i).isOf(item)) {
         return i;
       }
     }
-    if (inv.offHand.get(0).getItem().equals(item)) {
+    if (inv.offHand.get(0).isOf(item)) {
       return inv.main.size();
     }
     return -1;

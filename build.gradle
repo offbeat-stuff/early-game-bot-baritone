@@ -38,6 +38,8 @@ dependencies {
 
   modImplementation "net.fabricmc:fabric-language-scala:0.3.1.+"
   include "net.fabricmc:fabric-language-scala:0.3.1.+"
+
+  implementation 'org.scala-lang:scala3-library_3:3.1.2'
 }
 
 processResources {
