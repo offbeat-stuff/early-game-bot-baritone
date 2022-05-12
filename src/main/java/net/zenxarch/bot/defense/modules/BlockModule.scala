@@ -11,38 +11,45 @@ abstract class BlockModule(name: String) extends Module(name) {
   import Module.mc
   var lastPos: BlockPos
 
-  override def handleNone(): Unit = {
+  override def handleNone() = {
     internalHandleLastPos()
   }
 
-  override def handlePlayer(player: AbstractClientPlayerEntity) = handleLiving(player)
+  override def handlePlayer(player: AbstractClientPlayerEntity) = handleLiving(
+    player
+  )
   override def handleHostile(mob: MobEntity) = handleLiving(mob)
   override def handlePassive(mob: MobEntity) = handleLiving(mob)
 
-  def handleLiving(target: LivingEntity) : Unit = {
+  def handleLiving(target: LivingEntity): Unit = {
     if (internalHandleLastPos()) return
     lastPos = null
-    if(canTarget(target)) {
-      if(shouldTargetNearestBlock()) {
-        DefenseStateManager.performAction(() => handleBlock(findNearestBlockPos(target)))
-      } else if(canUse(target.getBlockPos)) {
-        DefenseStateManager.performAction(() => handleBlock(target.getBlockPos()))
+    if (canTarget(target)) {
+      if (shouldTargetNearestBlock()) {
+        val nearest = findNearestBlockPos(target)
+        DefenseStateManager.performAction(() =>
+          nearest != null && handleBlock(nearest)
+        )
+      } else if (canUse(target.getBlockPos)) {
+        DefenseStateManager.performAction(() =>
+          handleBlock(target.getBlockPos())
+        )
       }
     }
   }
 
-  private def findNearestBlockPos(target: LivingEntity) : BlockPos = {
+  private def findNearestBlockPos(target: LivingEntity): BlockPos = {
     val bb = target.getBoundingBox()
     val y = target.getBlockPos().getY()
-    var bestDist = 4.5*4.5
-    var bestPos : BlockPos = null
+    var bestDist = 4.5 * 4.5
+    var bestPos: BlockPos = null
     for
-      x <- Range(bb.minX.toInt,bb.maxX.toInt)
-      z <- Range(bb.minZ.toInt,bb.maxZ.toInt)
+      x <- Range(bb.minX.toInt, bb.maxX.toInt)
+      z <- Range(bb.minZ.toInt, bb.maxZ.toInt)
     do
-      val pos = new BlockPos(x,y,z)
-      val dist = mc.player.squaredDistanceTo(x,y,z)
-      if(dist < bestDist && canUse(pos)) {
+      val pos = new BlockPos(x, y, z)
+      val dist = mc.player.squaredDistanceTo(x, y, z)
+      if (dist < bestDist && canUse(pos)) {
         bestDist = dist
         bestPos = pos
       }
@@ -52,15 +59,15 @@ abstract class BlockModule(name: String) extends Module(name) {
   private def internalHandleLastPos(): Boolean = {
     if (lastPos != null)
       DefenseStateManager.performAction(() => handleLastBlock(lastPos))
-    return lastPos != null
+    lastPos != null
   }
 
   def handleLastBlock(pos: BlockPos): Boolean
 
-  def canTarget(target: LivingEntity) : Boolean
-  def canUse(pos: BlockPos) : Boolean
+  def canTarget(target: LivingEntity): Boolean
+  def canUse(pos: BlockPos): Boolean
 
-  def shouldTargetNearestBlock() : Boolean
+  def shouldTargetNearestBlock(): Boolean
 
-  def handleBlock(pos : BlockPos) : Boolean
+  def handleBlock(pos: BlockPos): Boolean
 }

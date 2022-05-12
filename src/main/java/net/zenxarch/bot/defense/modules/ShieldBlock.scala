@@ -19,27 +19,29 @@ class ShieldBlock extends Module("ShieldBlock") {
     setBlocking(false)
   }
 
-  override def handleProjectile(pe : ProjectileEntity) = {
+  override def handleProjectile(pe: ProjectileEntity) = {
     BaritoneUtils.pausePathing()
     if (tryBlock())
       ClientPlayerHelper.lookAt(pe)
   }
 
-  override def handleHostile(me : MobEntity) = {
+  override def handleHostile(me: MobEntity) = {
     tryBlock()
   }
 
-  override def handlePlayer(pe : AbstractClientPlayerEntity) = {
+  override def handlePlayer(pe: AbstractClientPlayerEntity) = {
     tryBlock()
   }
 
-  override def handlePassive(me : MobEntity) = {
+  override def handlePassive(me: MobEntity) = {
     setBlocking(false)
   }
 
-  private def tryBlock() = setBlocking(shieldCheck() && performAction(() => true))
+  private def tryBlock() = setBlocking(
+    shieldCheck() && performAction(() => true)
+  )
 
-  private def shieldCheck() : Boolean = {
+  private def shieldCheck(): Boolean = {
     if (mc.player.getOffHandStack().getItem() != Items.SHIELD)
       return false
     if (mc.player.getMainHandStack().isEmpty())
@@ -50,7 +52,7 @@ class ShieldBlock extends Module("ShieldBlock") {
     return !(item.isFood())
   }
 
-  private def setBlocking(blocking : Boolean) : Boolean = {
+  private def setBlocking(blocking: Boolean): Boolean = {
     if (wasBlocking ^ blocking) {
       mc.options.useKey.setPressed(blocking)
       wasBlocking = blocking

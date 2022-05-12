@@ -19,8 +19,10 @@ class WaterMLG extends Module("WaterMlg") {
     if (saveItemSlot == -1)
       return
 
-    if (mc.player.isOnGround() || mc.player.inPowderSnow ||
-        mc.player.isTouchingWater())
+    if (
+      mc.player.isOnGround() || mc.player.inPowderSnow ||
+      mc.player.isTouchingWater()
+    )
       return
 
     var blocks = getBlocksUntilLanding()
@@ -31,7 +33,7 @@ class WaterMLG extends Module("WaterMlg") {
 
     var pos = mc.player.getBlockPos().down(blocks - 1)
     var hit =
-        BlockPlacementUtils.raycastToBlockForPlacement(pos, FluidHandling.NONE)
+      BlockPlacementUtils.raycastToBlockForPlacement(pos, FluidHandling.NONE)
     if (hit == null)
       return
     DefenseStateManager.performAction(() => {
@@ -40,13 +42,13 @@ class WaterMLG extends Module("WaterMlg") {
     })
   }
 
-  private def getBlocksUntilLanding() : Int = {
+  private def getBlocksUntilLanding(): Int = {
     val start = mc.player.getBlockPos()
     val end = Math.min(start.getY() - mc.world.getBottomY(), 10)
-    for(i <- 0 until end) {
+    for (i <- 0 until end) {
       val pos = start.down(i)
       if (!checkAir(pos)) {
-        if(safeToLand(pos)) {
+        if (safeToLand(pos)) {
           return -1
         }
       } else return i
@@ -54,12 +56,14 @@ class WaterMLG extends Module("WaterMlg") {
     return -1
   }
 
-  private def checkAir(pos : BlockPos) =  mc.world.getBlockState(pos).getCollisionShape(mc.world, pos).isEmpty()
+  private def checkAir(pos: BlockPos) =
+    mc.world.getBlockState(pos).getCollisionShape(mc.world, pos).isEmpty()
 
-  private def safeToLand(pos : BlockPos) = !mc.world.getFluidState(pos).isEmpty() ||
-        mc.world.getBlockState(pos).isOf(Blocks.POWDER_SNOW)
+  private def safeToLand(pos: BlockPos) =
+    !mc.world.getFluidState(pos).isEmpty() ||
+      mc.world.getBlockState(pos).isOf(Blocks.POWDER_SNOW)
 
-  private def findSaveItem() : Int = {
+  private def findSaveItem(): Int = {
     var water = findInInventory(Items.WATER_BUCKET)
     if (water != -1 && mc.player.world.getRegistryKey() != World.NETHER) {
       return water

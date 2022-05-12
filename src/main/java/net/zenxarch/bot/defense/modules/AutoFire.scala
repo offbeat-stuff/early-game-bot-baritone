@@ -21,25 +21,26 @@ class AutoFire extends BlockModule("AutoFire") {
   var lastPos = null
   Settings.registerBoolSetting(this.name, "complexmethod", false)
 
-  override def shouldTargetNearestBlock() = Settings.getBoolean(this.name + ".complexmethod")
+  override def shouldTargetNearestBlock() =
+    Settings.getBoolean(this.name + ".complexmethod")
 
-  override def canTarget(target : LivingEntity) : Boolean = {
-    if(findInInventory(Items.FLINT_AND_STEEL) == -1)
+  override def canTarget(target: LivingEntity): Boolean = {
+    if (findInInventory(Items.FLINT_AND_STEEL) == -1)
       return false
     if (target == null)
       return false
     if (mc.player.getEyeY() < target.getBlockY())
       return false
     return !(target.isFireImmune() || target.isOnFire() || target.isWet() ||
-             target.inPowderSnow)
+      target.inPowderSnow)
   }
 
-  override def handleBlock(pos : BlockPos) : Boolean = {
+  override def handleBlock(pos: BlockPos): Boolean = {
     var slot = findInInventory(Items.FLINT_AND_STEEL)
-    if(slot == -1) return false
+    if (slot == -1) return false
     var hit =
-        BlockPlacementUtils.raycastToBlockForPlacement(pos, FluidHandling.ANY)
-    if(hit == null) return false
+      BlockPlacementUtils.raycastToBlockForPlacement(pos, FluidHandling.ANY)
+    if (hit == null) return false
     pickItemSlot(slot)
     if (BlockPlacementUtils.place(hit, Hand.MAIN_HAND)) {
       lastPos = pos
@@ -48,15 +49,21 @@ class AutoFire extends BlockModule("AutoFire") {
     return false
   }
 
-  override def handleLastBlock(lastPos : BlockPos) : Boolean = {
-    if (lastPos != null && mc.world.getBlockState(lastPos).getBlock().isInstanceOf[AbstractFireBlock]) {
+  override def handleLastBlock(lastPos: BlockPos): Boolean = {
+    if (
+      lastPos != null && mc.world
+        .getBlockState(lastPos)
+        .getBlock()
+        .isInstanceOf[AbstractFireBlock]
+    ) {
       mc.interactionManager.attackBlock(lastPos, Direction.UP)
       return true
     }
     return false
   }
 
-  override def canUse(pos : BlockPos) = pos != null && mc.world.getFluidState(pos).isEmpty() &&
-        mc.world.getBlockState(pos).getMaterial().isReplaceable() &&
-        AbstractFireBlock.getState(mc.world, pos).canPlaceAt(mc.world, pos)
+  override def canUse(pos: BlockPos) =
+    pos != null && mc.world.getFluidState(pos).isEmpty() &&
+      mc.world.getBlockState(pos).getMaterial().isReplaceable() &&
+      AbstractFireBlock.getState(mc.world, pos).canPlaceAt(mc.world, pos)
 }

@@ -71,7 +71,7 @@ class KillAura extends Module("KillAura") {
 
   private def getAttackDamage(stack: ItemStack, target: LivingEntity): Float = {
     if (
-      stack.getItem().isInstanceOf[SwordItem] || 
+      stack.getItem().isInstanceOf[SwordItem] ||
       stack.getItem().isInstanceOf[MiningToolItem]
     ) {
       return EnchantmentHelper.getAttackDamage(stack, target.getGroup())
