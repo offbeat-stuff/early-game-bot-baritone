@@ -5,6 +5,5 @@ import org.spongepowered.asm.mixin.Mixin
 import org.spongepowered.asm.mixin.gen.Accessor
 
 @Mixin(Array(classOf[LivingEntity]))
-trait PlayerEntityAccessor {
+trait PlayerEntityAccessor:
   @Accessor("field_6273") def getLastAttackedTicks(): Int
-}

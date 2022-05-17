@@ -22,7 +22,7 @@ import net.minecraft.client.network.ClientPlayerEntity
 import scala.jdk.CollectionConverters._
 import baritone.aa
 
-object CraftProcess {
+object CraftProcess:
   private var craftingQueue =
     new ListBuffer[(ShapedRecipe, Int)]()
   private var smeltingQueue =
@@ -31,20 +31,13 @@ object CraftProcess {
   //   new ArrayList<>()
   // private static ArrayList<SmokingRecipe> smokingQueue =
   //   new ArrayList<>()
-  def preTick() = {
-    if (
-      craftingQueue.length > 0 && mc.currentScreen.isInstanceOf[CraftingScreen]
-    ) {
-      craft()
-    }
-    if (
-      smeltingQueue.length > 0 && mc.currentScreen.isInstanceOf[FurnaceScreen]
-    ) {
-      smelt()
-    }
-  }
+  def preTick() =
+    if craftingQueue.length > 0 && mc.currentScreen.isInstanceOf[CraftingScreen]
+    then craft()
+    if smeltingQueue.length > 0 && mc.currentScreen.isInstanceOf[FurnaceScreen]
+    then smelt()
 
-  def checkMaxCraftable(r: Recipe[?]): Int = {
+  def checkMaxCraftable(r: Recipe[?]): Int =
     val sr = RecipeUtil.simpleIngredient(r)
     val p: ClientPlayerEntity = mc.player
     var inv = p
@@ -55,45 +48,34 @@ object CraftProcess {
       .toList()
       .asScala
     var itemAvail = new HashMap[List[Item], Integer]()
-    for (is <- inv) {
-      for (k <- sr.keys) {
-        if (k.contains(is.getItem()))
+    for is <- inv do
+      for k <- sr.keys do
+        if k.contains(is.getItem()) then
           itemAvail.put(
             k,
             itemAvail.getOrElse(k, 0).asInstanceOf[Int] + is.getCount()
           )
-      }
-    }
-    for ((k, v) <- sr) {
+    for (k, v) <- sr do
       itemAvail.put(k, itemAvail.getOrElse(k, 0).asInstanceOf[Int] / v)
-    }
-    return itemAvail.reduceLeft((a, b) => if (a(1) < b(1)) a else b)(1)
-  }
+    return itemAvail.reduceLeft((a, b) => if a(1) < b(1) then a else b)(1)
 
-  private def craft(): Unit = {
+  private def craft(): Unit =
     var r = craftingQueue(0)
-    if (checkMaxCraftable(r(0)) == 0) {
-      return
-    }
+    if checkMaxCraftable(r(0)) == 0 then return
     var cs = mc.currentScreen.asInstanceOf[CraftingScreen]
     var csh = cs.getScreenHandler()
     var im = mc.interactionManager
     var os = csh.getCraftingResultSlotIndex()
-    if (
-      csh.getSlot(os).getStack().getItem() ==
+    if csh.getSlot(os).getStack().getItem() ==
         r(0).getOutput().getItem()
-    ) {
+    then
       im.clickSlot(csh.syncId, os, 0, SlotActionType.QUICK_MOVE, mc.player)
       craftingQueue(0) = r.copy(_2 = r(1) - 1)
-      if (r(1) < 2) {
-        craftingQueue.remove(0)
-      }
+      if r(1) < 2 then craftingQueue.remove(0)
       return
-    }
     im.clickRecipe(csh.syncId, r(0), false)
-  }
 
-  private def smelt(): Unit = {
+  private def smelt(): Unit =
     var r = smeltingQueue(0)(0)
     var cs = mc.currentScreen.asInstanceOf[FurnaceScreen]
     var csh = cs.getScreenHandler()
@@ -101,46 +83,35 @@ object CraftProcess {
     // var is = 0
     // var fs = 1
     var im = mc.interactionManager
-    if (csh.getSlot(0).getStack().equals(r.getOutput())) {
+    if csh.getSlot(0).getStack().equals(r.getOutput()) then
       im.clickSlot(csh.syncId, os, 0, SlotActionType.QUICK_MOVE, mc.player)
       val q = smeltingQueue(0)
       smeltingQueue(0) = q.copy(_2 = q(1) - 1)
-      if (q(1) < 2) {
-        smeltingQueue.remove(0)
-      }
+      if q(1) < 2 then smeltingQueue.remove(0)
       return
-    }
-    if (!checkSmeltInput(csh, r)) {
-      im.clickRecipe(csh.syncId, r, false)
-    }
-    if (csh.isBurning()) {
-      return
-    }
+    if !checkSmeltInput(csh, r) then im.clickRecipe(csh.syncId, r, false)
+    if csh.isBurning() then return
     for
       i <- csh.slots.size() - 9 - 27 until csh.slots.size()
       if csh.getSlot(i).getStack().isOf(Items.COAL)
     do
       im.clickSlot(csh.syncId, i, 0, SlotActionType.QUICK_MOVE, mc.player)
       return
-  }
 
   private def checkSmeltInput(
       csh: FurnaceScreenHandler,
       r: SmeltingRecipe
-  ): Boolean = {
+  ): Boolean =
     assert(r.getIngredients().size() == 1)
     return r.getIngredients().get(0).test(csh.getSlot(0).getStack())
-  }
 
   def postTick() = {}
 
-  def enqueue(r: ShapedRecipe, amt: Int) = {
+  def enqueue(r: ShapedRecipe, amt: Int) =
     craftingQueue += ((r, amt))
-  }
 
-  def enqueue(r: SmeltingRecipe, amt: Int) = {
+  def enqueue(r: SmeltingRecipe, amt: Int) =
     smeltingQueue += ((r, amt))
-  }
 
   /*
 
@@ -153,4 +124,3 @@ object CraftProcess {
   }
 
    */
-}

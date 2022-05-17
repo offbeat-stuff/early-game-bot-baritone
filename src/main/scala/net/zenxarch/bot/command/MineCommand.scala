@@ -7,7 +7,7 @@ import dev.xpple.clientarguments.arguments.CBlockStateArgumentType._
 import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource
 import net.zenxarch.bot.process.MineProcess
 
-class MineCommand extends ZenCommand {
+class MineCommand extends ZenCommand:
   def register() = literal("zmine").`then`(
     argument("block", blockState())
       .executes((ctx) => {
@@ -18,4 +18,3 @@ class MineCommand extends ZenCommand {
         0
       })
   )
-}

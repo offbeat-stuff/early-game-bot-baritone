@@ -6,7 +6,7 @@ import net.minecraft.entity.mob.MobEntity
 import net.minecraft.entity.projectile.ProjectileEntity
 import net.zenxarch.bot.settings.Settings
 
-abstract class Module(val name: String) {
+abstract class Module(val name: String):
 
   Settings.registerSetting(name + ".enabled", true)
 
@@ -18,8 +18,6 @@ abstract class Module(val name: String) {
   def handlePassive(mob: MobEntity) = {}
 
   def isActive() = Settings.getBoolean(this.name + ".enabled")
-}
 
-object Module {
+object Module:
   val mc = MinecraftClient.getInstance()
-}

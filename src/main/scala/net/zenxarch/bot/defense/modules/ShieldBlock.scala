@@ -11,52 +11,40 @@ import net.minecraft.util.hit.HitResult
 import net.zenxarch.bot.util.BaritoneUtils
 import net.zenxarch.bot.util.ClientPlayerHelper
 
-class ShieldBlock extends Module("ShieldBlock") {
+class ShieldBlock extends Module("ShieldBlock"):
   import Module.mc
   private var wasBlocking = false
 
-  override def handleNone() = {
+  override def handleNone() =
     setBlocking(false)
-  }
 
-  override def handleProjectile(pe: ProjectileEntity) = {
+  override def handleProjectile(pe: ProjectileEntity) =
     BaritoneUtils.pausePathing()
-    if (tryBlock())
-      ClientPlayerHelper.lookAt(pe)
-  }
+    if tryBlock() then ClientPlayerHelper.lookAt(pe)
 
-  override def handleHostile(me: MobEntity) = {
+  override def handleHostile(me: MobEntity) =
     tryBlock()
-  }
 
-  override def handlePlayer(pe: AbstractClientPlayerEntity) = {
+  override def handlePlayer(pe: AbstractClientPlayerEntity) =
     tryBlock()
-  }
 
-  override def handlePassive(me: MobEntity) = {
+  override def handlePassive(me: MobEntity) =
     setBlocking(false)
-  }
 
   private def tryBlock() = setBlocking(
     shieldCheck() && performAction(() => true)
   )
 
-  private def shieldCheck(): Boolean = {
-    if (mc.player.getOffHandStack().getItem() != Items.SHIELD)
-      return false
-    if (mc.player.getMainHandStack().isEmpty())
-      return true
+  private def shieldCheck(): Boolean =
+    if mc.player.getOffHandStack().getItem() != Items.SHIELD then return false
+    if mc.player.getMainHandStack().isEmpty() then return true
     val item = mc.player.getMainHandStack().getItem()
-    if (item.isInstanceOf[BlockItem])
+    if item.isInstanceOf[BlockItem] then
       return mc.crosshairTarget.getType() != HitResult.Type.BLOCK
     return !(item.isFood())
-  }
 
-  private def setBlocking(blocking: Boolean): Boolean = {
-    if (wasBlocking ^ blocking) {
+  private def setBlocking(blocking: Boolean): Boolean =
+    if wasBlocking ^ blocking then
       mc.options.useKey.setPressed(blocking)
       wasBlocking = blocking
-    }
     return wasBlocking
-  }
-}

@@ -27,7 +27,7 @@ import net.zenxarch.bot.ZenBot.mc
 import scala.jdk.CollectionConverters._
 import scala.collection.mutable.ListBuffer
 
-object TargetUtil {
+object TargetUtil:
   private var hostileTarget: MobEntity = null
   private var passiveTarget: MobEntity = null
   private var projectileTarget: ProjectileEntity = null
@@ -48,23 +48,20 @@ object TargetUtil {
 
   private val playerUsernameStrings = new ListBuffer[String]()
 
-  def init() = {
+  def init() =
     Settings.registerSetting(
       "targets.maxReach",
       4.5
     )
     Settings.registerSetting("targets.ignorePassive", false)
-  }
 
-  private def ignorePassive(): Boolean = {
+  private def ignorePassive(): Boolean =
     return Settings.getBoolean("targets.ignorePassive")
-  }
 
-  private def maxReach(): Double = {
+  private def maxReach(): Double =
     return Settings.getDouble("targets.maxReach")
-  }
 
-  def updateTargets() = {
+  def updateTargets() =
     val reach = maxReach()
     hostileTarget = null
     passiveTarget = null
@@ -76,19 +73,16 @@ object TargetUtil {
       e <- mc.world.getEntities().asScala
       if e != null && e.isAlive()
     do
-      e match {
+      e match
         case pe: ProjectileEntity => {
           projectileTicks = handleProjectile(pe, projectileTicks)
         }
         case mob: MobEntity if !mob.isDead() => {
-          if (checkHostile(mob)) {
+          if checkHostile(mob) then
             hostileDist = handleHostile(mob, hostileDist)
-          }
-          if (!ignorePassive() && checkPassive(mob)) {
+          if !ignorePassive() && checkPassive(mob) then
             passiveDist = handlePassive(mob, passiveDist)
-          }
         }
-      }
     // find nearest enemy player
     playerTarget = null
     var playerDistance = reach * reach
@@ -97,43 +91,34 @@ object TargetUtil {
       if checkPlayer(p)
     do
       val dist = checkSquaredDistanceTo(p)
-      if (dist < playerDistance && checkVisibilty(p)) {
+      if dist < playerDistance && checkVisibilty(p) then
         playerDistance = dist
         playerTarget = p
-      }
-  }
 
-  private def handleProjectile(e: ProjectileEntity, d: Int): Int = {
-    e match {
+  private def handleProjectile(e: ProjectileEntity, d: Int): Int =
+    e match
       case arrow: ArrowEntity
           if !arrow.asInstanceOf[ProjectileEntityAccessor].getInGround() => {
         val ticks = wouldHitPlayer(arrow, d)
-        if (ticks < d) {
+        if ticks < d then
           projectileTarget = arrow
           return ticks
-        }
       }
-    }
     return d
-  }
 
-  private def handleHostile(e: MobEntity, d: Double): Double = {
+  private def handleHostile(e: MobEntity, d: Double): Double =
     val dist = checkSquaredDistanceTo(e)
-    if (dist < d && checkVisibilty(e)) {
+    if dist < d && checkVisibilty(e) then
       hostileTarget = e
       return dist
-    }
     return d
-  }
 
-  private def handlePassive(e: MobEntity, d: Double): Double = {
+  private def handlePassive(e: MobEntity, d: Double): Double =
     val dist = checkSquaredDistanceTo(e)
-    if (dist < d && checkVisibilty(e)) {
+    if dist < d && checkVisibilty(e) then
       passiveTarget = e
       return dist
-    }
     return d
-  }
 
   def getNearestHostile() = hostileTarget
 
@@ -143,13 +128,9 @@ object TargetUtil {
 
   def getUsernames() = playerUsernameStrings
 
-  def handleUsername(s: String) = {
-    if (playerUsernameStrings.contains(s)) {
-      playerUsernameStrings -= s
-    } else {
-      playerUsernameStrings += s
-    }
-  }
+  def handleUsername(s: String) =
+    if playerUsernameStrings.contains(s) then playerUsernameStrings -= s
+    else playerUsernameStrings += s
 
   def getNearestEnemyPlayer() = playerTarget
 
@@ -159,18 +140,15 @@ object TargetUtil {
         p.getEntityName()
       )
 
-  private def checkHostile(e: MobEntity): Boolean = {
-    e match {
+  private def checkHostile(e: MobEntity): Boolean =
+    e match
       case eman: EndermanEntity => {
         return eman.isAngry()
       }
-    }
-    if (nuetralTypes.contains(e.getType()))
-      return e.isAttacking()
+    if nuetralTypes.contains(e.getType()) then return e.isAttacking()
     return e.isInstanceOf[EnderDragonEntity] || e.isInstanceOf[FlyingEntity] ||
       e.isInstanceOf[SlimeEntity] || e.isInstanceOf[HostileEntity] ||
       e.isInstanceOf[HoglinEntity]
-  }
 
   private def checkPassive(e: MobEntity) = passiveTypes.contains(e.getType()) &&
     !(e.isInstanceOf[AnimalEntity] && (e.asInstanceOf[AnimalEntity]).isBaby())
@@ -178,7 +156,7 @@ object TargetUtil {
   private def checkSquaredDistanceTo(e: Entity) =
     e.squaredDistanceTo(mc.player.getEyePos())
 
-  private def checkVisibilty(e: LivingEntity): Boolean = {
+  private def checkVisibilty(e: LivingEntity): Boolean =
     var start = mc.player.getEyePos()
     var end = e.getPos()
     return mc.world
@@ -192,5 +170,3 @@ object TargetUtil {
         )
       )
       .getType() == HitResult.Type.MISS
-  }
-}

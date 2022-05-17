@@ -14,80 +14,63 @@ import net.minecraft.item.MiningToolItem
 import net.minecraft.item.SwordItem
 import net.zenxarch.bot.util.BaritoneUtils
 
-class KillAura extends Module("KillAura") {
+class KillAura extends Module("KillAura"):
   import Module.mc
 
-  override def handleHostile(me: MobEntity): Unit = {
+  override def handleHostile(me: MobEntity): Unit =
     BaritoneUtils.pausePathing()
-    if (handleCrit())
-      hitLiving(me)
-  }
+    if handleCrit() then hitLiving(me)
 
-  override def handlePlayer(pe: AbstractClientPlayerEntity): Unit = {
+  override def handlePlayer(pe: AbstractClientPlayerEntity): Unit =
     BaritoneUtils.pausePathing()
-    if (handleCrit())
-      hitLiving(pe)
-  }
+    if handleCrit() then hitLiving(pe)
 
-  override def handlePassive(me: MobEntity): Unit = {
+  override def handlePassive(me: MobEntity): Unit =
     BaritoneUtils.pausePathing()
-    if (handleCrit())
-      hitLiving(me)
-  }
+    if handleCrit() then hitLiving(me)
 
-  override def handleNone(): Unit = {
+  override def handleNone(): Unit =
     BaritoneUtils.resumePathing()
-  }
 
-  private def hitLiving(le: LivingEntity) = {
+  private def hitLiving(le: LivingEntity) =
     performAction { () =>
       {
-        if (!lookingAt(le))
-          lookAt(le)
+        if !lookingAt(le) then lookAt(le)
         pickItemSlot(findBestWeapon(le))
         hitEntity(le)
         true
       }
     }
-  }
 
-  private def findBestWeapon(target: LivingEntity): Int = {
+  private def findBestWeapon(target: LivingEntity): Int =
     var bestSlot = -1
     var bestDamage = 0.0f
     var inv = mc.player.getInventory()
-    for (i <- 0 until inv.main.size()) {
+    for i <- 0 until inv.main.size() do
       var dmg = getAttackDamage(inv.main.get(i), target)
-      if (dmg > bestDamage) {
+      if dmg > bestDamage then
         bestDamage = dmg
         bestSlot = i
-      }
-    }
 
-    if (getAttackDamage(inv.offHand.get(0), target) > bestDamage) {
+    if getAttackDamage(inv.offHand.get(0), target) > bestDamage then
       bestSlot = inv.main.size()
-    }
     return bestSlot
-  }
 
-  private def getAttackDamage(stack: ItemStack, target: LivingEntity): Float = {
-    if (
-      stack.getItem().isInstanceOf[SwordItem] ||
+  private def getAttackDamage(stack: ItemStack, target: LivingEntity): Float =
+    if stack.getItem().isInstanceOf[SwordItem] ||
       stack.getItem().isInstanceOf[MiningToolItem]
-    ) {
-      return EnchantmentHelper.getAttackDamage(stack, target.getGroup())
-    }
+    then return EnchantmentHelper.getAttackDamage(stack, target.getGroup())
     return 0.0f
-  }
 
-  private def handleCrit(): Boolean = {
+  private def handleCrit(): Boolean =
     var canCrit = !(mc.player.isTouchingWater() || mc.player.isClimbing() ||
       mc.player.isInLava() ||
       mc.player.hasStatusEffect(StatusEffects.BLINDNESS) ||
       mc.player.hasVehicle())
     var remainingTicks = getRemainingAttackCooldownTicks()
-    if (canCrit) {
-      if (mc.player.isOnGround()) {
-        if (remainingTicks < 5)
+    if canCrit then
+      if mc.player.isOnGround() then
+        if remainingTicks < 5 then
           performAction(() => {
             var wasSneaking = mc.player.input.sneaking
             mc.player.input.sneaking = false
@@ -96,10 +79,5 @@ class KillAura extends Module("KillAura") {
             return true
           })
         return false
-      } else if (mc.player.getVelocity().y > 0) {
-        return false
-      }
-    }
+      else if mc.player.getVelocity().y > 0 then return false
     return remainingTicks <= 1
-  }
-}

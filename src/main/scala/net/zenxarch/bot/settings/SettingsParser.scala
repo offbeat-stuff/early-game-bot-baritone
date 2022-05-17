@@ -3,8 +3,8 @@ package net.zenxarch.bot.settings
 import scala.collection.mutable.StringBuilder
 import scala.collection.mutable.ListBuffer
 
-object SettingsParser {
-  def parse(input: String): (List[String], String) = {
+object SettingsParser:
+  def parse(input: String): (List[String], String) =
     var res = ListBuffer[String]()
 
     val inp = split(input, '=')
@@ -26,11 +26,8 @@ object SettingsParser {
     do buffer += i
 
     return (res.toList, buffer.toString)
-  }
 
-  private def split(input: String, delimiter: Char): (String, String) = {
+  private def split(input: String, delimiter: Char): (String, String) =
     val idx = input.indexOf(delimiter)
     return if idx == -1 then (input, "")
     else (input.substring(0, idx), input.substring(idx + 1))
-  }
-}

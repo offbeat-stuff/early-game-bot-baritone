@@ -12,7 +12,7 @@ import net.minecraft.item.Item
 import net.zenxarch.bot.process.CraftProcess
 import net.zenxarch.bot.util.RecipeUtil
 
-class CraftCommand extends ZenCommand {
+class CraftCommand extends ZenCommand:
 
   override def register() = literal("zcraft").`then`(
     argument("item", itemStack())
@@ -32,22 +32,20 @@ class CraftCommand extends ZenCommand {
       source: FabricClientCommandSource,
       item: Item,
       amt: Integer
-  ): Int = {
+  ): Int =
     RecipeUtil.recache()
-    var b = if (trySmelt(item, amt)) {
-      Blocks.FURNACE
-    } else if (tryCraft(item, amt)) {
-      Blocks.CRAFTING_TABLE
-    } else return -1
+    var b =
+      if trySmelt(item, amt) then Blocks.FURNACE
+      else if tryCraft(item, amt) then Blocks.CRAFTING_TABLE
+      else return -1
     BaritoneAPI
       .getProvider()
       .getPrimaryBaritone()
       .getGetToBlockProcess()
       .getToBlock(b)
     return 0
-  }
 
-  def trySmelt(item: Item, amt: Integer): Boolean = {
+  def trySmelt(item: Item, amt: Integer): Boolean =
     for
       r <- RecipeUtil.findSmeltingRecipes(item)
       if CraftProcess.checkMaxCraftable(r) >= amt
@@ -55,9 +53,8 @@ class CraftCommand extends ZenCommand {
       CraftProcess.enqueue(r, amt)
       return true
     return false
-  }
 
-  private def tryCraft(item: Item, amt: Integer): Boolean = {
+  private def tryCraft(item: Item, amt: Integer): Boolean =
     for
       r <- RecipeUtil.findCraftingRecipes(item)
       if CraftProcess.checkMaxCraftable(r) >= amt
@@ -65,5 +62,3 @@ class CraftCommand extends ZenCommand {
       CraftProcess.enqueue(r, amt)
       return true
     return false
-  }
-}

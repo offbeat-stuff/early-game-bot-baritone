@@ -15,7 +15,7 @@ import net.zenxarch.bot.settings.Settings
 import net.zenxarch.bot.util.TargetUtil
 import scala.jdk.CollectionConverters._
 
-class KillAuraCommand extends ZenCommand {
+class KillAuraCommand extends ZenCommand:
   private var active = false
   def register() = literal("zaura")
     .`then`(generatePlayerCommand())
@@ -44,32 +44,29 @@ class KillAuraCommand extends ZenCommand {
       .executes(ctx => {
         var username = getString(ctx, "PlayerName")
         TargetUtil.handleUsername(username)
-        if (TargetUtil.getUsernames().contains(username)) {
+        if TargetUtil.getUsernames().contains(username) then {
           sendMessage(ctx, "Currently targeting " + username + "")
         }
         0
       })
   )
 
-  private def getPlayers(source: FabricClientCommandSource) = (for (
+  private def getPlayers(source: FabricClientCommandSource) = (for
     player <- source.getWorld().getPlayers().asScala
     if !player.equals(source.getPlayer())
-  ) yield player.getEntityName()).toArray
+  yield player.getEntityName()).toArray
 
   private def toggleDefense(
       ctx: CommandContext[FabricClientCommandSource]
-  ): Int = {
+  ): Int =
     active = !active
-    val text = if (active) "Defense Activated" else "Defense Deactived"
+    val text = if active then "Defense Activated" else "Defense Deactived"
     sendMessage(ctx, text)
     DefenseStateManager.setActiveStatus(active)
     return 0
-  }
 
   private def sendMessage(
       ctx: CommandContext[FabricClientCommandSource],
       message: String
-  ) = {
+  ) =
     ctx.getSource().sendFeedback(new LiteralText(message))
-  }
-}

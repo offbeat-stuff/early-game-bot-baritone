@@ -12,34 +12,27 @@ import net.minecraft.world.RaycastContext.FluidHandling
 import net.minecraft.world.RaycastContext.ShapeType
 import net.zenxarch.bot.ZenBot.mc
 
-object BlockPlacementUtils {
+object BlockPlacementUtils:
 
   def raycastToBlockForPlacement(
       pos: BlockPos,
       f: FluidHandling
-  ): BlockHitResult = {
+  ): BlockHitResult =
     var vpos = new Vec3d(pos.getX(), pos.getY(), pos.getZ())
     vpos = vpos.add(0.5, -0.02, 0.5)
     val result = praycast(vpos, f)
-    if (result.getType() == HitResult.Type.BLOCK) {
+    if result.getType() == HitResult.Type.BLOCK then
       val bhit = result.asInstanceOf[BlockHitResult]
-      if (
-        bhit.getBlockPos().equals(pos.down()) &&
+      if bhit.getBlockPos().equals(pos.down()) &&
         bhit.getSide() == Direction.UP
-      ) {
-        return bhit
-      }
-    }
+      then return bhit
     return null
-  }
 
-  def place(hit: BlockHitResult, hand: Hand): Boolean = {
+  def place(hit: BlockHitResult, hand: Hand): Boolean =
     val res =
       mc.interactionManager.interactBlock(mc.player, mc.world, hand, hit)
-    if (res.shouldSwingHand())
-      mc.player.swingHand(hand)
+    if res.shouldSwingHand() then mc.player.swingHand(hand)
     return res.isAccepted()
-  }
 
   private def praycast(v: Vec3d, f: FluidHandling): HitResult =
     mc.world.raycast(
@@ -51,4 +44,3 @@ object BlockPlacementUtils {
         mc.player
       )
     )
-}

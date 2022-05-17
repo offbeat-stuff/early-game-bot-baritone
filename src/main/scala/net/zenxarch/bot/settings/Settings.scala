@@ -7,53 +7,46 @@ import scala.collection.mutable.HashMap
 import java.util.function.Predicate
 import net.minecraft.util.math.MathHelper
 
-object Settings {
+object Settings:
   import SettingsParser._
   private val settingsMap = new HashMap[String, Setting[?]]()
 
-  def registerSetting(settingName: String, value: Boolean): Unit = {
+  def registerSetting(settingName: String, value: Boolean): Unit =
     val s = parse(settingName)
     val n = s(0).reduce(_ + "." + _)
     settingsMap.put(n, new BoolSetting(value))
-  }
 
   def registerSetting(
       settingName: String,
       value: Double
-  ): Unit = {
+  ): Unit =
     val s = parse(settingName)
     val n = s(0).reduce(_ + "." + _)
     settingsMap.put(
       n,
       new DoubleSetting(value)
     )
-  }
 
-  def getBoolean(identifier: String): Boolean = {
+  def getBoolean(identifier: String): Boolean =
     var s = parse(identifier)
     var n = s(0).reduce(_ + "." + _)
-    if (settingsMap.contains(n) && settingsMap.get(n).get.kind == Kind.Bool) {
-      return (settingsMap.get(n).get.asInstanceOf[BoolSetting]).value
-    }
+    if settingsMap.contains(n) && settingsMap.get(n).get.kind == Kind.Bool
+    then return (settingsMap.get(n).get.asInstanceOf[BoolSetting]).value
     return false
-  }
 
-  def getDouble(identifier: String): Double = {
+  def getDouble(identifier: String): Double =
     val s = parse(identifier)
     val n = s(0).reduce(_ + "." + _)
-    if (settingsMap.contains(n) && settingsMap.get(n).get.kind == Kind.Double) {
-      return (settingsMap.get(n).get.asInstanceOf[DoubleSetting]).value
-    }
+    if settingsMap.contains(n) && settingsMap.get(n).get.kind == Kind.Double
+    then return (settingsMap.get(n).get.asInstanceOf[DoubleSetting]).value
     return 0
-  }
 
-  def execute(str: String) = {
+  def execute(str: String) =
     val s = parse(str)
     val n = s(0).reduce(_ + "." + _)
     if settingsMap.contains(n) then settingsMap.get(n).get.accept(s(1))
-  }
 
-  def exec(str: String): List[String] = {
+  def exec(str: String): List[String] =
     var s = parse(str)
 
     val n = s(0).reduce(_ + "." + _)
@@ -65,11 +58,10 @@ object Settings {
         sg.accept(s(1))
         List(n + " = " + sg.value)
     else
-      (for (s <- settingsMap.keys.filter(_.startsWith(n)))
-        yield s + " = " + settingsMap.get(s).get.value).toList
-  }
+      (for s <- settingsMap.keys.filter(_.startsWith(n))
+      yield s + " = " + settingsMap.get(s).get.value).toList
 
-  def suggest(builder: SuggestionsBuilder): CompletableFuture[Suggestions] = {
+  def suggest(builder: SuggestionsBuilder): CompletableFuture[Suggestions] =
     val s = parse(builder.getRemaining())
     val n = s(0).reduceLeft(_ + "." + _)
 
@@ -83,5 +75,3 @@ object Settings {
     else settingsMap.keys.filter(_.startsWith(n)).foreach(builder.suggest(_))
 
     return builder.buildFuture()
-  }
-}
