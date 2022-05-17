@@ -95,11 +95,10 @@ object DefenseStateManager {
   def tryHandleMcScreen(): Boolean = {
     if (mc.currentScreen == null)
       return true
-    if (mc.currentScreen.isInstanceOf[HandledScreen]) {
+    if mc.currentScreen.isInstanceOf[HandledScreen[?]] then
       if (shouldCloseHandledScreen)
         mc.player.closeHandledScreen()
       return shouldCloseHandledScreen
-    }
     return true
   }
 }

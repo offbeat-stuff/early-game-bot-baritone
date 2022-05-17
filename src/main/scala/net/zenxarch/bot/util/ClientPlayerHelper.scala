@@ -15,9 +15,10 @@ import net.minecraft.util.math.Direction
 import net.zenxarch.bot.mixin.PlayerEntityAccessor
 
 import net.zenxarch.bot.ZenBot.mc
+import net.minecraft.item.ItemStack
 
 object ClientPlayerHelper {
-
+  
   private def toDegrees(a: Double, b: Double) =
     Math.toDegrees(Math.atan2(a, b)).toFloat
 
@@ -90,17 +91,17 @@ object ClientPlayerHelper {
     mc.interactionManager.pickFromInventory(slot)
   }
 
-  def findInInventory(item: Item): Int = {
-    var inv = mc.player.getInventory()
+  def findInInventory(test: (ItemStack) => Boolean): Int = {
     for
-      i <- 0 until inv.main.size()
-      if inv.main.get(i).isOf(item)
+      i <- 0 until mc.player.getInventory().main.size()
+      if test.apply(mc.player.getInventory().main.get(i))
     do return i
-    if (inv.offHand.get(0).isOf(item)) {
-      return inv.main.size()
-    }
+    if test.apply(mc.player.getInventory().offHand.get(0)) then
+      return mc.player.getInventory().main.size()
     return -1
   }
+
+  def findInInventory(item: Item) : Int = findInInventory(is => is.isOf(item))
 
   def pickItem(item: Item): Boolean = {
     val slot = findInInventory(item)

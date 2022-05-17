@@ -10,7 +10,7 @@ import net.minecraft.util.math.MathHelper
 object Settings {
   private val settingsMap = new HashMap[String, Setting[?]]()
 
-  private var modules = new List[String]()
+  private var modules : List[String] = Nil
 
   def registerModule(module: String) = {
     modules = module :: modules
@@ -163,7 +163,7 @@ object Settings {
     def suggest(input: String): List[String]
   }
 
-  class BoolSetting(var value: Boolean)
+  class BoolSetting(value: Boolean)
       extends Setting[Boolean](Type.Bool, value) {
     override def accept(s: String): Boolean = {
       s match {
@@ -185,7 +185,7 @@ object Settings {
   }
 
   class DoubleSetting(
-      var value: Double,
+      value: Double,
       private val min: Double,
       private val max: Double,
       private val suggestions: List[String]

@@ -10,12 +10,14 @@ import net.minecraft.world.RaycastContext.FluidHandling
 import net.minecraft.world.World
 import net.zenxarch.bot.defense.DefenseStateManager
 import net.zenxarch.bot.util.BlockPlacementUtils
+import net.minecraft.item.ItemStack
+import net.minecraft.item.BlockItem
 
 class WaterMLG extends Module("WaterMlg") {
   import Module.mc
 
   override def preTick() = {
-    var saveItemSlot = findSaveItem()
+    val saveItemSlot = findSaveItem()
     if (saveItemSlot == -1)
       return
 
@@ -26,9 +28,9 @@ class WaterMLG extends Module("WaterMlg") {
       return
 
     var blocks = getBlocksUntilLanding()
-    if (blocks == -1 || blocks == 10)
+    if (blocks < 0 || blocks > 5)
       return
-    if (mc.player.fallDistance + blocks < 3)
+    if (mc.player.fallDistance + blocks < 4)
       return
 
     var pos = mc.player.getBlockPos().down(blocks - 1)
@@ -44,15 +46,11 @@ class WaterMLG extends Module("WaterMlg") {
 
   private def getBlocksUntilLanding(): Int = {
     val start = mc.player.getBlockPos()
-    val end = Math.min(start.getY() - mc.world.getBottomY(), 10)
-    for (i <- 0 until end) {
+    val end = Math.min(start.getY() - mc.world.getBottomY(), 5)
+    for i <- 0 until end
+    do
       val pos = start.down(i)
-      if (!checkAir(pos)) {
-        if (safeToLand(pos)) {
-          return -1
-        }
-      } else return i
-    }
+      if !checkAir(pos) then return if (safeToLand(pos)) -1 else i
     return -1
   }
 
@@ -65,9 +63,14 @@ class WaterMLG extends Module("WaterMlg") {
 
   private def findSaveItem(): Int = {
     var water = findInInventory(Items.WATER_BUCKET)
-    if (water != -1 && mc.player.world.getRegistryKey() != World.NETHER) {
+    if (water != -1 && !mc.player.world.getRegistryKey().equals(World.NETHER)) {
       return water
     }
-    return findInInventory(Items.POWDER_SNOW_BUCKET)
+    var powder = findInInventory(Items.POWDER_SNOW_BUCKET)
+    if (powder != -1) return powder
+
+    return findInInventory(is =>
+      !is.isEmpty() && is.getItem().isInstanceOf[BlockItem]
+    )
   }
 }
