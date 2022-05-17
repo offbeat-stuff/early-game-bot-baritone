@@ -74,15 +74,14 @@ object TargetUtil:
       if e != null && e.isAlive()
     do
       e match
-        case pe: ProjectileEntity => {
+        case pe: ProjectileEntity =>
           projectileTicks = handleProjectile(pe, projectileTicks)
-        }
-        case mob: MobEntity if !mob.isDead() => {
+        case mob: MobEntity if !mob.isDead() =>
           if checkHostile(mob) then
             hostileDist = handleHostile(mob, hostileDist)
           if !ignorePassive() && checkPassive(mob) then
             passiveDist = handlePassive(mob, passiveDist)
-        }
+        case _ => {}
     // find nearest enemy player
     playerTarget = null
     var playerDistance = reach * reach
@@ -98,13 +97,13 @@ object TargetUtil:
   private def handleProjectile(e: ProjectileEntity, d: Int): Int =
     e match
       case arrow: ArrowEntity
-          if !arrow.asInstanceOf[ProjectileEntityAccessor].getInGround() => {
-        val ticks = wouldHitPlayer(arrow, d)
-        if ticks < d then
-          projectileTarget = arrow
-          return ticks
-      }
-    return d
+        if !arrow.asInstanceOf[ProjectileEntityAccessor].getInGround() =>
+          val ticks = wouldHitPlayer(arrow, d)
+          if ticks < d then
+            projectileTarget = arrow
+            return ticks
+          d
+      case _ => d
 
   private def handleHostile(e: MobEntity, d: Double): Double =
     val dist = checkSquaredDistanceTo(e)
@@ -142,16 +141,20 @@ object TargetUtil:
 
   private def checkHostile(e: MobEntity): Boolean =
     e match
-      case eman: EndermanEntity => {
-        return eman.isAngry()
-      }
-    if nuetralTypes.contains(e.getType()) then return e.isAttacking()
-    return e.isInstanceOf[EnderDragonEntity] || e.isInstanceOf[FlyingEntity] ||
-      e.isInstanceOf[SlimeEntity] || e.isInstanceOf[HostileEntity] ||
-      e.isInstanceOf[HoglinEntity]
+      case eman: EndermanEntity =>
+        eman.isAngry()
+      case nuetral if nuetralTypes.contains(nuetral) => 
+        e.isAttacking()
+      case _ : EnderDragonEntity | _ : SlimeEntity | _ : FlyingEntity | _ : HostileEntity | _ : HoglinEntity =>
+        true
+      case _ => false
 
-  private def checkPassive(e: MobEntity) = passiveTypes.contains(e.getType()) &&
-    !(e.isInstanceOf[AnimalEntity] && (e.asInstanceOf[AnimalEntity]).isBaby())
+  private def checkPassive(e: MobEntity) =
+    e match
+      case a : AnimalEntity =>
+        !a.isBaby()
+      case _ =>
+        passiveTypes.contains(e.getType())
 
   private def checkSquaredDistanceTo(e: Entity) =
     e.squaredDistanceTo(mc.player.getEyePos())

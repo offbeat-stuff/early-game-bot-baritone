@@ -24,8 +24,8 @@ object RecipeUtil:
     mc.getNetworkHandler()
       .getRecipeManager()
       .values()
-      .forEach(r => {
-        r match {
+      .forEach(r =>
+        r match
           case c: ShapedRecipe =>
             craftingRecipes += c
           case b: BlastingRecipe =>
@@ -34,8 +34,8 @@ object RecipeUtil:
             smokingRecipes += s
           case s: SmeltingRecipe =>
             smeltingRecipes += s
-        }
-      })
+          case _ => {}
+      )
 
   def getIngredientItemIds(ing: Ingredient): List[Item] =
     return (for i <- ing.getMatchingStacks()
