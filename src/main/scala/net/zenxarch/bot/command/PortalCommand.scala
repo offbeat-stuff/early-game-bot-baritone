@@ -14,8 +14,8 @@ class PortalCommand extends ZenCommand {
     )
 
   private def execute(ctx: CommandContext[fs]): Int = {
-    // BlockPos pos = ctx.getArgument("pos", PosArgument.class);
-    // mod.portalProcess.activate(pos);
-    return 0;
+    // BlockPos pos = ctx.getArgument("pos", PosArgument.class)
+    // mod.portalProcess.activate(pos)
+    return 0
   }
 }

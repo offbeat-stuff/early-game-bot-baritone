@@ -98,7 +98,7 @@ class KillAura extends Module("KillAura") {
         return false
       } else if (mc.player.getVelocity().y > 0) {
         return false
-      };
+      }
     }
     return remainingTicks <= 1
   }

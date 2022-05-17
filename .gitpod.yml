@@ -11,6 +11,9 @@ github:
     master: true
 vscode:
   extensions:
-    - redhat.java
-    - vscjava.vscode-java-debug
-    - vscjava.vscode-java-pack
+    - CoenraadS.bracket-pair-colorizer
+    - scalameta.metals
+    - tuto193.monokai-vibrant
+    - PKief.material-product-icons
+    - PKief.material-icon-theme
+    - EditorConfig.EditorConfig

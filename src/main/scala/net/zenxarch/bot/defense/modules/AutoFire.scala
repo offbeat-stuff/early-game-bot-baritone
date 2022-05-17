@@ -19,7 +19,7 @@ import net.minecraft.util.math.BlockPos
 class AutoFire extends BlockModule("AutoFire") {
   import Module.mc
   var lastPos = null
-  Settings.registerBoolSetting(this.name, "complexmethod", false)
+  Settings.registerSetting(this.name + ".complexmethod", false)
 
   override def shouldTargetNearestBlock() =
     Settings.getBoolean(this.name + ".complexmethod")

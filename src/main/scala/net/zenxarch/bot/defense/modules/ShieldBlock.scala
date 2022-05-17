@@ -13,7 +13,7 @@ import net.zenxarch.bot.util.ClientPlayerHelper
 
 class ShieldBlock extends Module("ShieldBlock") {
   import Module.mc
-  private var wasBlocking = false;
+  private var wasBlocking = false
 
   override def handleNone() = {
     setBlocking(false)

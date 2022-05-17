@@ -29,12 +29,12 @@ class KillAuraCommand extends ZenCommand {
         .executes(ctx => {
           Settings
             .exec(getString(ctx, "setting"))
-            .forEach(sendMessage(ctx, _))
+            .foreach(sendMessage(ctx, _))
           0
         })
     )
     .executes(ctx => {
-      Settings.exec("").forEach(sendMessage(ctx, _))
+      Settings.exec("").foreach(sendMessage(ctx, _))
       0
     })
 
@@ -42,10 +42,10 @@ class KillAuraCommand extends ZenCommand {
     argument("PlayerName", string())
       .suggests((c, b) => suggestMatching(getPlayers(c.getSource()), b))
       .executes(ctx => {
-        var username = getString(ctx, "PlayerName");
-        TargetUtil.handleUsername(username);
+        var username = getString(ctx, "PlayerName")
+        TargetUtil.handleUsername(username)
         if (TargetUtil.getUsernames().contains(username)) {
-          sendMessage(ctx, "Currently targeting " + username + ";");
+          sendMessage(ctx, "Currently targeting " + username + "")
         }
         0
       })
@@ -59,7 +59,7 @@ class KillAuraCommand extends ZenCommand {
   private def toggleDefense(
       ctx: CommandContext[FabricClientCommandSource]
   ): Int = {
-    active = !active;
+    active = !active
     val text = if (active) "Defense Activated" else "Defense Deactived"
     sendMessage(ctx, text)
     DefenseStateManager.setActiveStatus(active)

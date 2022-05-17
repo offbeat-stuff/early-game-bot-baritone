@@ -11,7 +11,6 @@ import net.minecraft.command.argument.ItemStackArgumentType._
 import net.minecraft.item.Item
 import net.zenxarch.bot.process.CraftProcess
 import net.zenxarch.bot.util.RecipeUtil
-import scala.jdk.CollectionConverters._
 
 class CraftCommand extends ZenCommand {
 
@@ -50,7 +49,7 @@ class CraftCommand extends ZenCommand {
 
   def trySmelt(item: Item, amt: Integer): Boolean = {
     for
-      r <- RecipeUtil.findSmeltingRecipes(item).asScala
+      r <- RecipeUtil.findSmeltingRecipes(item)
       if CraftProcess.checkMaxCraftable(r) >= amt
     do
       CraftProcess.enqueue(r, amt)
@@ -60,7 +59,7 @@ class CraftCommand extends ZenCommand {
 
   private def tryCraft(item: Item, amt: Integer): Boolean = {
     for
-      r <- RecipeUtil.findCraftingRecipes(item).asScala
+      r <- RecipeUtil.findCraftingRecipes(item)
       if CraftProcess.checkMaxCraftable(r) >= amt
     do
       CraftProcess.enqueue(r, amt)

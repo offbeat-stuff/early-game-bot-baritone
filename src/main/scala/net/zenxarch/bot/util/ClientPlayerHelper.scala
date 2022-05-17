@@ -7,7 +7,7 @@ import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket
 import net.minecraft.util.Hand
 // import
-// net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
+// net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket
 import net.minecraft.util.hit.EntityHitResult
 import net.minecraft.util.hit.HitResult.Type
 import net.minecraft.util.math.BlockPos
@@ -22,7 +22,7 @@ object ClientPlayerHelper {
     Math.toDegrees(Math.atan2(a, b)).toFloat
 
   def lookAt(x: Double, y: Double, z: Double) = {
-    val p = mc.player;
+    val p = mc.player
     val dx = x - p.getX()
     val dy = y - p.getEyeY()
     val dz = z - p.getZ()
@@ -56,9 +56,9 @@ object ClientPlayerHelper {
   }
 
   def setSelectedSlot(i: Int) = {
-    mc.player.getInventory().selectedSlot = i % 9;
+    mc.player.getInventory().selectedSlot = i % 9
     // p.networkHandler.sendPacket(new
-    // UpdateSelectedSlotC2SPacket(p.getInventory().selectedSlot));
+    // UpdateSelectedSlotC2SPacket(p.getInventory().selectedSlot))
   }
 
   private def swapHands() = {
@@ -69,11 +69,11 @@ object ClientPlayerHelper {
           BlockPos.ORIGIN,
           Direction.DOWN
         )
-      );
+      )
   }
 
   def pickItemSlot(slot: Int): Unit = {
-    val inv = mc.player.getInventory();
+    val inv = mc.player.getInventory()
     if (slot == inv.main.size()) {
       swapHands()
       return
@@ -84,10 +84,10 @@ object ClientPlayerHelper {
       setSelectedSlot(slot)
       return
     }
-    val swappable = inv.getSwappableHotbarSlot();
+    val swappable = inv.getSwappableHotbarSlot()
     if (swappable != inv.selectedSlot)
       setSelectedSlot(swappable)
-    mc.interactionManager.pickFromInventory(slot);
+    mc.interactionManager.pickFromInventory(slot)
   }
 
   def findInInventory(item: Item): Int = {
@@ -97,7 +97,7 @@ object ClientPlayerHelper {
       if inv.main.get(i).isOf(item)
     do return i
     if (inv.offHand.get(0).isOf(item)) {
-      return inv.main.size();
+      return inv.main.size()
     }
     return -1
   }
@@ -106,7 +106,7 @@ object ClientPlayerHelper {
     val slot = findInInventory(item)
     if (slot == -1)
       return false
-    pickItemSlot(slot);
+    pickItemSlot(slot)
     return true
   }
 

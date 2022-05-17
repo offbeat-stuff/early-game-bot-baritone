@@ -9,7 +9,7 @@ import net.zenxarch.bot.defense.Settings
 abstract class Module(val name: String) {
 
   Settings.registerModule(name)
-  Settings.registerBoolSetting(name, "enabled", true)
+  Settings.registerSetting(name + ".enabled", true)
 
   def preTick() = {}
   def handleNone() = {}

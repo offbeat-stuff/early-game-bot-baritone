@@ -5,6 +5,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(PersistentProjectileEntity.class)
-public interface ProjectileEntityAccessor {
+interface ProjectileEntityAccessor {
   @Accessor("inGround") boolean getInGround();
 }
