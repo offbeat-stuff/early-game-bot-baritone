@@ -4,11 +4,10 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.AbstractClientPlayerEntity
 import net.minecraft.entity.mob.MobEntity
 import net.minecraft.entity.projectile.ProjectileEntity
-import net.zenxarch.bot.defense.Settings
+import net.zenxarch.bot.settings.Settings
 
 abstract class Module(val name: String) {
 
-  Settings.registerModule(name)
   Settings.registerSetting(name + ".enabled", true)
 
   def preTick() = {}

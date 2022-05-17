@@ -6,5 +6,5 @@ import org.spongepowered.asm.mixin.gen.Accessor
 
 @Mixin(Array(classOf[PersistentProjectileEntity]))
 trait ProjectileEntityAccessor {
-  @Accessor("field_7588") def getInGround() : Boolean
+  @Accessor("field_7588") def getInGround(): Boolean
 }

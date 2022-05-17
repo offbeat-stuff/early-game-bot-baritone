@@ -18,7 +18,7 @@ import net.zenxarch.bot.ZenBot.mc
 import net.minecraft.item.ItemStack
 
 object ClientPlayerHelper {
-  
+
   private def toDegrees(a: Double, b: Double) =
     Math.toDegrees(Math.atan2(a, b)).toFloat
 
@@ -101,7 +101,7 @@ object ClientPlayerHelper {
     return -1
   }
 
-  def findInInventory(item: Item) : Int = findInInventory(is => is.isOf(item))
+  def findInInventory(item: Item): Int = findInInventory(is => is.isOf(item))
 
   def pickItem(item: Item): Boolean = {
     val slot = findInInventory(item)

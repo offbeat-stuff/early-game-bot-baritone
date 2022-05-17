@@ -12,7 +12,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.MathHelper
 import net.minecraft.world.RaycastContext.FluidHandling
-import net.zenxarch.bot.defense.Settings
+import net.zenxarch.bot.settings.Settings
 import net.zenxarch.bot.util.BlockPlacementUtils
 import net.minecraft.util.math.BlockPos
 

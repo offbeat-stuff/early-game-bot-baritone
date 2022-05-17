@@ -21,7 +21,7 @@ import net.minecraft.util.hit.HitResult
 import net.minecraft.world.RaycastContext
 import net.minecraft.world.RaycastContext.FluidHandling
 import net.minecraft.world.RaycastContext.ShapeType
-import net.zenxarch.bot.defense.Settings
+import net.zenxarch.bot.settings.Settings
 import net.zenxarch.bot.mixin.ProjectileEntityAccessor
 import net.zenxarch.bot.ZenBot.mc
 import scala.jdk.CollectionConverters._
@@ -49,13 +49,9 @@ object TargetUtil {
   private val playerUsernameStrings = new ListBuffer[String]()
 
   def init() = {
-    Settings.registerModule("targets")
     Settings.registerSetting(
       "targets.maxReach",
-      4.5,
-      0,
-      4.5,
-      List(3.5, 4.5)
+      4.5
     )
     Settings.registerSetting("targets.ignorePassive", false)
   }

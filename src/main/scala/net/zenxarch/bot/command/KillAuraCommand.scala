@@ -11,7 +11,7 @@ import java.util.ArrayList
 import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource
 import net.minecraft.text.LiteralText
 import net.zenxarch.bot.defense.DefenseStateManager
-import net.zenxarch.bot.defense.Settings
+import net.zenxarch.bot.settings.Settings
 import net.zenxarch.bot.util.TargetUtil
 import scala.jdk.CollectionConverters._
 

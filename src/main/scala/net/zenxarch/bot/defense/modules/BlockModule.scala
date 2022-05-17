@@ -4,7 +4,7 @@ import net.zenxarch.bot.defense.DefenseStateManager
 import net.minecraft.util.math.BlockPos
 import net.minecraft.entity.mob.MobEntity
 import net.minecraft.entity.LivingEntity
-import net.zenxarch.bot.defense.Settings
+import net.zenxarch.bot.settings.Settings
 import net.minecraft.client.network.AbstractClientPlayerEntity
 
 abstract class BlockModule(name: String) extends Module(name) {
