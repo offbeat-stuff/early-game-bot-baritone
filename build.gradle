@@ -21,6 +21,8 @@ repositories {
 	flatDir { dirs 'libs'}
 }
 
+
+
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
@@ -29,13 +31,11 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	modImplementation "baritone-api-fabric:baritone-api-fabric:${project.baritone_version}"
 	
-	modImplementation "dev.xpple:clientarguments:${project.clientarguments_version}"
-	include "dev.xpple:clientarguments:${project.clientarguments_version}"
+	include(modImplementation "dev.xpple:clientarguments:${project.clientarguments_version}")
 
-  modImplementation "net.fabricmc:fabric-language-scala:0.3.1.+"
-  include "net.fabricmc:fabric-language-scala:0.3.1.+"
+  include(modImplementation "net.fabricmc:fabric-language-scala:0.3.1.+")
 
-  implementation 'org.scala-lang:scala3-library_3:3.1.2'
+  include(implementation 'org.scala-lang:scala3-library_3:3.1.2')
 }
 
 processResources {
