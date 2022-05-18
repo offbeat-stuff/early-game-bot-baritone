@@ -34,18 +34,23 @@ class KillAura extends Module("KillAura"):
     BaritoneUtils.resumePathing()
 
   private def handleLiving(le: LivingEntity): Unit =
-    val bestWeapon = findBestWeapon(le)
-    pickItemSlot(bestWeapon)
+    performAction(() => internalHandleLiving(le))
+
+  private def internalHandleLiving(le: LivingEntity): Boolean =
     if !lookingAt(le) then lookAt(le)
-    if bestWeapon != -1 && !handleCrit() then return
-    performAction { () =>
+    val bestWeapon = findBestWeapon(le)
+    if bestWeapon != mc.player.getInventory().selectedSlot then
+      pickItemSlot(bestWeapon)
+      return true
+    if handleCrit() then
       hitEntity(le)
-      true
-    }
+      return true
+    false
 
   private def findBestWeapon(target: LivingEntity): Int =
     return findBestInInventory(
-      WeaponUtils.getAttackDamagePerSec(_, target.getGroup())
+      WeaponUtils.getAttackDamagePerSec(_, target.getGroup()),
+      WeaponUtils.getBaseAttackDamagePerSec()
     )
 
   private def handleCrit(): Boolean =
