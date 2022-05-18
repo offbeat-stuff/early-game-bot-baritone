@@ -39,10 +39,30 @@ class KillAura extends Module("KillAura"):
   private def internalHandleLiving(le: LivingEntity): Boolean =
     if !lookingAt(le) then lookAt(le)
     val bestWeapon = findBestWeapon(le)
+
+    // switch weapon
     if bestWeapon != mc.player.getInventory().selectedSlot then
       pickItemSlot(bestWeapon)
       return true
-    if handleCrit() then
+
+    val remainingTicks = getRemainingAttackCooldownTicks()
+    val canCrit = mc.player.isTouchingWater() || mc.player.isClimbing() ||
+      mc.player.isInLava() ||
+      mc.player.hasStatusEffect(StatusEffects.BLINDNESS) ||
+      mc.player.hasVehicle()
+
+    if canCrit && mc.player.isOnGround then
+      return if remainingTicks < 0 then
+        doJump()
+        true
+      else false
+
+    val shouldHit =
+      remainingTicks < 1 && (if canCrit then mc.player.fallDistance > 0
+                             else true)
+
+    // hit the target
+    if shouldHit then
       hitEntity(le)
       return true
     false
@@ -53,22 +73,8 @@ class KillAura extends Module("KillAura"):
       WeaponUtils.getBaseAttackDamagePerSec()
     )
 
-  private def handleCrit(): Boolean =
-    val canCrit = !(mc.player.isTouchingWater() || mc.player.isClimbing() ||
-      mc.player.isInLava() ||
-      mc.player.hasStatusEffect(StatusEffects.BLINDNESS) ||
-      mc.player.hasVehicle())
-    lazy val remainingTicks = getRemainingAttackCooldownTicks()
-    if canCrit then
-      if mc.player.isOnGround() then
-        if remainingTicks < 5 then
-          performAction(() => {
-            var wasSneaking = mc.player.input.sneaking
-            mc.player.input.sneaking = false
-            mc.player.jump()
-            mc.player.input.sneaking = wasSneaking
-            return true
-          })
-        return false
-      else if mc.player.fallDistance <= 0 then return false
-    return remainingTicks < 1
+  private def doJump() =
+    val wasSneaking = mc.player.input.sneaking
+    mc.player.input.sneaking = false
+    mc.player.jump()
+    mc.player.input.sneaking = wasSneaking
