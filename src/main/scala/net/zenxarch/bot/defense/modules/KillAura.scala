@@ -46,13 +46,13 @@ class KillAura extends Module("KillAura"):
       return true
 
     val remainingTicks = getRemainingAttackCooldownTicks()
-    val canCrit = mc.player.isTouchingWater() || mc.player.isClimbing() ||
+    val canCrit = !(mc.player.isTouchingWater() || mc.player.isClimbing() ||
       mc.player.isInLava() ||
       mc.player.hasStatusEffect(StatusEffects.BLINDNESS) ||
-      mc.player.hasVehicle()
+      mc.player.hasVehicle())
 
     if canCrit && mc.player.isOnGround then
-      return if remainingTicks < 0 then
+      return if remainingTicks < 5 then
         doJump()
         true
       else false
