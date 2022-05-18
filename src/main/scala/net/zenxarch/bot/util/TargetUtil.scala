@@ -140,11 +140,11 @@ object TargetUtil:
       )
 
   private def checkHostile(e: MobEntity): Boolean =
-    e match
+    if nuetralTypes.contains(e.getType) then
+      e.isAttacking
+    else e match
       case eman: EndermanEntity =>
         eman.isAngry()
-      case nuetral if nuetralTypes.contains(nuetral) =>
-        e.isAttacking()
       case _: EnderDragonEntity | _: SlimeEntity | _: FlyingEntity |
           _: HostileEntity | _: HoglinEntity =>
         true
