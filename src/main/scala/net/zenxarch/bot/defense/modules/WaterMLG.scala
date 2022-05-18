@@ -12,6 +12,7 @@ import net.zenxarch.bot.defense.DefenseStateManager
 import net.zenxarch.bot.util.BlockPlacementUtils
 import net.minecraft.item.ItemStack
 import net.minecraft.item.BlockItem
+import baritone.y
 
 class WaterMLG extends Module("WaterMlg"):
   import Module.mc
@@ -24,27 +25,36 @@ class WaterMLG extends Module("WaterMlg"):
       mc.player.isTouchingWater()
     then return
 
-    var blocks = getBlocksUntilLanding()
-    if blocks < 0 || blocks > 5 then return
+    val landPos = getLandingBlock(6)
+    if landPos == null then return
+    val blocks = mc.player.getPos.y.toFloat - landPos.getY.toFloat
     if mc.player.fallDistance + blocks < 4 then return
 
-    var pos = mc.player.getBlockPos().down(blocks - 1)
     var hit =
-      BlockPlacementUtils.raycastToBlockForPlacement(pos, FluidHandling.NONE)
+      BlockPlacementUtils.raycastToBlockForPlacement(
+        landPos.up,
+        FluidHandling.NONE
+      )
     if hit == null then return
     DefenseStateManager.performAction(() => {
       pickItemSlot(saveItemSlot)
       return BlockPlacementUtils.place(hit, Hand.MAIN_HAND)
     })
 
-  private def getBlocksUntilLanding(): Int =
+  private def getLandingBlock(upto: Int): BlockPos =
     val start = mc.player.getBlockPos()
-    val end = Math.min(start.getY() - mc.world.getBottomY(), 5)
-    for i <- 0 until end
+    val end = Math.min(start.getY() - mc.world.getBottomY(), upto)
+    val bb = mc.player.getBoundingBox()
+    for
+      y <- 1 until end
+      x <- bb.minX.toInt to bb.maxX.toInt
+      z <- bb.minZ.toInt to bb.maxZ.toInt
     do
-      val pos = start.down(i)
-      if !checkAir(pos) then return if safeToLand(pos) then -1 else i
-    return -1
+      val pos = BlockPos(x, start.getY - y, z)
+      if !checkAir(pos) then
+        return if safeToLand(pos) then null
+        else pos
+    return null
 
   private def checkAir(pos: BlockPos) =
     mc.world.getBlockState(pos).getCollisionShape(mc.world, pos).isEmpty()
