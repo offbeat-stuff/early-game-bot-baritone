@@ -19,11 +19,14 @@ import net.minecraft.item.ItemStack
 
 object ClientPlayerHelper:
 
-  private def toDegrees(a: Double, b: Double) =
+  @inline private def p = mc.player
+  @inline private def inv = p.getInventory()
+  @inline private def cross = mc.crosshairTarget
+
+  @inline private def toDegrees(a: Double, b: Double) =
     Math.toDegrees(Math.atan2(a, b)).toFloat
 
   def lookAt(x: Double, y: Double, z: Double) =
-    val p = mc.player
     val dx = x - p.getX()
     val dy = y - p.getEyeY()
     val dz = z - p.getZ()
@@ -31,19 +34,19 @@ object ClientPlayerHelper:
     p.setYaw(toDegrees(dz, dx) - 90)
     p.setPitch(-toDegrees(dy, dh))
 
-  def lookAt(e: Entity): Unit = { lookAt(e.getX(), e.getEyeY(), e.getZ()) }
+  def lookAt(e: Entity): Unit =
+    lookAt(e.getX(), e.getEyeY(), e.getZ())
 
   def lookingAt(target: Entity): Boolean =
-    if mc.crosshairTarget == null then return false
-    if mc.crosshairTarget.getType() == Type.ENTITY then
-      return (mc.crosshairTarget
+    if cross == null then return false
+    if cross.getType() == Type.ENTITY then
+      return (cross
         .asInstanceOf[EntityHitResult])
         .getEntity()
         .equals(target)
     return false
 
   def syncRotation() =
-    val p = mc.player
     p.networkHandler.sendPacket(
       new PlayerMoveC2SPacket.LookAndOnGround(
         p.getYaw(),
@@ -53,7 +56,7 @@ object ClientPlayerHelper:
     )
 
   def setSelectedSlot(i: Int) =
-    mc.player.getInventory().selectedSlot = i % 9
+    inv.selectedSlot = i % 9
     // p.networkHandler.sendPacket(new
     // UpdateSelectedSlotC2SPacket(p.getInventory().selectedSlot))
 
@@ -68,7 +71,6 @@ object ClientPlayerHelper:
       )
 
   def pickItemSlot(slot: Int): Unit =
-    val inv = mc.player.getInventory()
     if slot == inv.main.size() then
       swapHands()
       return
@@ -82,12 +84,23 @@ object ClientPlayerHelper:
 
   def findInInventory(test: (ItemStack) => Boolean): Int =
     for
-      i <- 0 until mc.player.getInventory().main.size()
-      if test.apply(mc.player.getInventory().main.get(i))
+      i <- 0 until inv.main.size()
+      if test.apply(inv.main.get(i))
     do return i
-    if test.apply(mc.player.getInventory().offHand.get(0)) then
-      return mc.player.getInventory().main.size()
+    if test.apply(inv.offHand.get(0)) then return inv.main.size()
     return -1
+
+  def findBestInInventory(pref: (ItemStack) => Double): Int =
+    var bestSlot = -1
+    var best = 0.0
+    for i <- 0 until inv.main.size
+    do
+      val preference = pref(inv.main.get(i))
+      if preference > best then
+        best = preference
+        bestSlot = i
+    if pref(inv.offHand.get(0)) > best then return inv.main.size
+    return bestSlot
 
   def findInInventory(item: Item): Int = findInInventory(is => is.isOf(item))
 
@@ -97,10 +110,11 @@ object ClientPlayerHelper:
     pickItemSlot(slot)
     return true
 
-  def getRemainingAttackCooldownTicks(): Int =
-    mc.player.getAttackCooldownProgressPerTick().toInt - (mc.player
+  def getRemainingAttackCooldownTicks(): Float =
+    p.getAttackCooldownProgressPerTick() - (mc.player
       .asInstanceOf[PlayerEntityAccessor])
       .getLastAttackedTicks()
+      .toFloat
 
   def hitEntity(e: Entity) =
     val res = mc.interactionManager.attackEntity(mc.player, e)

@@ -21,8 +21,9 @@ abstract class BlockModule(name: String) extends Module(name):
   override def handlePassive(mob: MobEntity) = handleLiving(mob)
 
   def handleLiving(target: LivingEntity): Unit =
-    if internalHandleLastPos() then return
-    lastPos = null
+    if internalHandleLastPos() then
+      lastPos = null
+      return
     if canTarget(target) then
       if shouldTargetNearestBlock() then
         val nearest = findNearestBlockPos(target)
@@ -51,9 +52,9 @@ abstract class BlockModule(name: String) extends Module(name):
     return bestPos
 
   private def internalHandleLastPos(): Boolean =
-    if lastPos != null then
-      DefenseStateManager.performAction(() => handleLastBlock(lastPos))
-    lastPos != null
+    lastPos != null && DefenseStateManager.performAction(() =>
+      handleLastBlock(lastPos)
+    )
 
   def handleLastBlock(pos: BlockPos): Boolean
 

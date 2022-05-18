@@ -13,61 +13,49 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.MiningToolItem
 import net.minecraft.item.SwordItem
 import net.zenxarch.bot.util.BaritoneUtils
+import net.zenxarch.bot.util.WeaponUtils
 
 class KillAura extends Module("KillAura"):
   import Module.mc
 
   override def handleHostile(me: MobEntity): Unit =
     BaritoneUtils.pausePathing()
-    if handleCrit() then hitLiving(me)
+    handleLiving(me)
 
   override def handlePlayer(pe: AbstractClientPlayerEntity): Unit =
     BaritoneUtils.pausePathing()
-    if handleCrit() then hitLiving(pe)
+    handleLiving(pe)
 
   override def handlePassive(me: MobEntity): Unit =
     BaritoneUtils.pausePathing()
-    if handleCrit() then hitLiving(me)
+    handleLiving(me)
 
   override def handleNone(): Unit =
     BaritoneUtils.resumePathing()
 
-  private def hitLiving(le: LivingEntity) =
+  private def handleLiving(le: LivingEntity): Unit =
+    val bestWeapon = findBestWeapon(le)
+    if bestWeapon != -1 && !handleCrit() then return
     performAction { () =>
       {
         if !lookingAt(le) then lookAt(le)
-        pickItemSlot(findBestWeapon(le))
+        pickItemSlot(bestWeapon)
         hitEntity(le)
         true
       }
     }
 
   private def findBestWeapon(target: LivingEntity): Int =
-    var bestSlot = -1
-    var bestDamage = 0.0f
-    var inv = mc.player.getInventory()
-    for i <- 0 until inv.main.size() do
-      var dmg = getAttackDamage(inv.main.get(i), target)
-      if dmg > bestDamage then
-        bestDamage = dmg
-        bestSlot = i
-
-    if getAttackDamage(inv.offHand.get(0), target) > bestDamage then
-      bestSlot = inv.main.size()
-    return bestSlot
-
-  private def getAttackDamage(stack: ItemStack, target: LivingEntity): Float =
-    if stack.getItem().isInstanceOf[SwordItem] ||
-      stack.getItem().isInstanceOf[MiningToolItem]
-    then return EnchantmentHelper.getAttackDamage(stack, target.getGroup())
-    return 0.0f
+    return findBestInInventory(
+      WeaponUtils.getAttackDamagePerSec(_, target.getGroup())
+    )
 
   private def handleCrit(): Boolean =
-    var canCrit = !(mc.player.isTouchingWater() || mc.player.isClimbing() ||
+    val canCrit = !(mc.player.isTouchingWater() || mc.player.isClimbing() ||
       mc.player.isInLava() ||
       mc.player.hasStatusEffect(StatusEffects.BLINDNESS) ||
       mc.player.hasVehicle())
-    var remainingTicks = getRemainingAttackCooldownTicks()
+    lazy val remainingTicks = getRemainingAttackCooldownTicks()
     if canCrit then
       if mc.player.isOnGround() then
         if remainingTicks < 5 then
@@ -79,5 +67,5 @@ class KillAura extends Module("KillAura"):
             return true
           })
         return false
-      else if mc.player.getVelocity().y > 0 then return false
-    return remainingTicks <= 1
+      else if mc.player.fallDistance <= 0 then return false
+    return remainingTicks < 1

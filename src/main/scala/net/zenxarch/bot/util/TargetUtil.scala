@@ -97,12 +97,12 @@ object TargetUtil:
   private def handleProjectile(e: ProjectileEntity, d: Int): Int =
     e match
       case arrow: ArrowEntity
-        if !arrow.asInstanceOf[ProjectileEntityAccessor].getInGround() =>
-          val ticks = wouldHitPlayer(arrow, d)
-          if ticks < d then
-            projectileTarget = arrow
-            return ticks
-          d
+          if !arrow.asInstanceOf[ProjectileEntityAccessor].getInGround() =>
+        val ticks = wouldHitPlayer(arrow, d)
+        if ticks < d then
+          projectileTarget = arrow
+          return ticks
+        d
       case _ => d
 
   private def handleHostile(e: MobEntity, d: Double): Double =
@@ -143,15 +143,16 @@ object TargetUtil:
     e match
       case eman: EndermanEntity =>
         eman.isAngry()
-      case nuetral if nuetralTypes.contains(nuetral) => 
+      case nuetral if nuetralTypes.contains(nuetral) =>
         e.isAttacking()
-      case _ : EnderDragonEntity | _ : SlimeEntity | _ : FlyingEntity | _ : HostileEntity | _ : HoglinEntity =>
+      case _: EnderDragonEntity | _: SlimeEntity | _: FlyingEntity |
+          _: HostileEntity | _: HoglinEntity =>
         true
       case _ => false
 
   private def checkPassive(e: MobEntity) =
     e match
-      case a : AnimalEntity =>
+      case a: AnimalEntity =>
         !a.isBaby()
       case _ =>
         passiveTypes.contains(e.getType())
