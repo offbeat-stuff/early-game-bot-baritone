@@ -35,14 +35,12 @@ class KillAura extends Module("KillAura"):
 
   private def handleLiving(le: LivingEntity): Unit =
     val bestWeapon = findBestWeapon(le)
+    pickItemSlot(bestWeapon)
+    if !lookingAt(le) then lookAt(le)
     if bestWeapon != -1 && !handleCrit() then return
     performAction { () =>
-      {
-        if !lookingAt(le) then lookAt(le)
-        pickItemSlot(bestWeapon)
-        hitEntity(le)
-        true
-      }
+      hitEntity(le)
+      true
     }
 
   private def findBestWeapon(target: LivingEntity): Int =
