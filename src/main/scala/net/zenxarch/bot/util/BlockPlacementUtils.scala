@@ -28,7 +28,7 @@ object BlockPlacementUtils:
 
   def getPlaceableSide(target: BlockPos): Direction =
     for
-      i <- List(
+      i <- Array(
         Direction.DOWN,
         Direction.EAST,
         Direction.WEST,
@@ -47,12 +47,14 @@ object BlockPlacementUtils:
     if side.equals(Direction.UP) then return null
     val vpos = getVecForBlockPlacement(target, side)
     val result = praycast(vpos, f)
-    if result.getType() == HitResult.Type.BLOCK then
-      val bhit = result.asInstanceOf[BlockHitResult]
-      if bhit.getBlockPos().equals(target.offset(side)) &&
-        bhit.getSide().equals(side.getOpposite)
-      then return bhit
-    return null
+    return result.getType() match
+      case HitResult.Type.BLOCK =>
+        val bhit = result.asInstanceOf[BlockHitResult]
+        if bhit.getBlockPos().equals(target.offset(side)) &&
+          bhit.getSide().equals(side.getOpposite)
+        then bhit
+        else null
+      case _ => null
 
   def place(hit: BlockHitResult, hand: Hand): Boolean =
     val res =
