@@ -13,18 +13,44 @@ import net.minecraft.world.RaycastContext.ShapeType
 import net.zenxarch.bot.ZenBot.mc
 
 object BlockPlacementUtils:
+  def getVecForBlockPlacement(
+      target: BlockPos,
+      side: Direction
+  ): Vec3d =
+    Vec3d(
+      target.getX.toDouble + 0.5 + side.getOffsetX.toDouble * 0.52,
+      target.getY.toDouble + 0.5 + side.getOffsetY.toDouble * 0.52,
+      target.getZ.toDouble + 0.5 + side.getOffsetZ.toDouble * 0.52
+    )
+
+  def isSideOkayForPlacement(target: BlockPos, side: Direction): Boolean =
+    mc.world.getBlockState(target).isSideSolidFullSquare(mc.world, target, side)
+
+  def getPlaceableSide(target: BlockPos): Direction =
+    for
+      i <- List(
+        Direction.DOWN,
+        Direction.EAST,
+        Direction.WEST,
+        Direction.SOUTH,
+        Direction.NORTH
+      )
+      if isSideOkayForPlacement(target.offset(i), i.getOpposite)
+    do return i
+    return Direction.UP
 
   def raycastToBlockForPlacement(
-      pos: BlockPos,
+      target: BlockPos,
       f: FluidHandling
   ): BlockHitResult =
-    var vpos = new Vec3d(pos.getX(), pos.getY(), pos.getZ())
-    vpos = vpos.add(0.5, -0.02, 0.5)
+    val side = getPlaceableSide(target)
+    if side.equals(Direction.UP) then return null
+    val vpos = getVecForBlockPlacement(target, side)
     val result = praycast(vpos, f)
     if result.getType() == HitResult.Type.BLOCK then
       val bhit = result.asInstanceOf[BlockHitResult]
-      if bhit.getBlockPos().equals(pos.down()) &&
-        bhit.getSide() == Direction.UP
+      if bhit.getBlockPos().equals(target.offset(side)) &&
+        bhit.getSide().equals(side.getOpposite)
       then return bhit
     return null
 
