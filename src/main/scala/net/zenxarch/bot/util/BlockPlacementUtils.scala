@@ -26,25 +26,23 @@ object BlockPlacementUtils:
   def isSideOkayForPlacement(target: BlockPos, side: Direction): Boolean =
     mc.world.getBlockState(target).isSideSolidFullSquare(mc.world, target, side)
 
-  def getPlaceableSide(target: BlockPos): Direction =
+  def getPlaceableSide(
+      target: BlockPos,
+      check: (Direction) => Boolean
+  ): Direction =
     for
-      i <- Array(
-        Direction.DOWN,
-        Direction.EAST,
-        Direction.WEST,
-        Direction.SOUTH,
-        Direction.NORTH
-      )
-      if isSideOkayForPlacement(target.offset(i), i.getOpposite)
+      i <- Direction.values
+      if check(i)
     do return i
-    return Direction.UP
+    return null
 
   def raycastToBlockForPlacement(
       target: BlockPos,
-      f: FluidHandling
+      f: FluidHandling,
+      check: (Direction) => Boolean
   ): BlockHitResult =
-    val side = getPlaceableSide(target)
-    if side.equals(Direction.UP) then return null
+    val side = getPlaceableSide(target, check)
+    if side == null then return null
     val vpos = getVecForBlockPlacement(target, side)
     val result = praycast(vpos, f)
     return result.getType() match
@@ -62,7 +60,7 @@ object BlockPlacementUtils:
     if res.shouldSwingHand() then mc.player.swingHand(hand)
     return res.isAccepted()
 
-  private def praycast(v: Vec3d, f: FluidHandling): HitResult =
+  def praycast(v: Vec3d, f: FluidHandling): HitResult =
     mc.world.raycast(
       new RaycastContext(
         mc.player.getEyePos(),

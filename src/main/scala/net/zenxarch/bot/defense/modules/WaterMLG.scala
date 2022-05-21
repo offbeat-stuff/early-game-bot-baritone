@@ -9,10 +9,13 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.RaycastContext.FluidHandling
 import net.minecraft.world.World
 import net.zenxarch.bot.defense.DefenseStateManager
-import net.zenxarch.bot.util.BlockPlacementUtils
+import net.zenxarch.bot.util.BlockPlacementUtils._
 import net.minecraft.item.ItemStack
 import net.minecraft.item.BlockItem
-import baritone.y
+import net.minecraft.util.math.Direction
+import net.zenxarch.bot.util.ClientPlayerHelper
+import net.minecraft.util.hit.HitResult
+import net.minecraft.util.hit.BlockHitResult
 
 class WaterMLG extends Module("WaterMlg"):
   import Module.mc
@@ -25,21 +28,32 @@ class WaterMLG extends Module("WaterMlg"):
       mc.player.isTouchingWater()
     then return
 
-    val landPos = getLandingBlock(6)
+    var landPos = getLandingBlock(6)
     if landPos == null then return
     val blocks = mc.player.getPos.y.toFloat - landPos.getY.toFloat
     if mc.player.fallDistance + blocks < 4 then return
 
-    var hit =
-      BlockPlacementUtils.raycastToBlockForPlacement(
-        landPos.up,
-        FluidHandling.NONE
-      )
-    if hit == null then return
+    landPos = landPos.up
+    val side = getPlaceableSide(landPos, checkSide(landPos, _))
+    if side == null then return
+    val vec = getVecForBlockPlacement(landPos, side)
+
+    val hit = praycast(vec, FluidHandling.NONE)
+    if hit == null || !hit.getType().equals(HitResult.Type.BLOCK) then return
+    val bhit = hit.asInstanceOf[BlockHitResult]
+    if !bhit.getBlockPos().equals(landPos.offset(side)) || !bhit
+        .getSide()
+        .equals(side.getOpposite)
+    then return
     DefenseStateManager.performAction(() => {
       pickItemSlot(saveItemSlot)
-      return BlockPlacementUtils.place(hit, Hand.MAIN_HAND)
+      ClientPlayerHelper.lookAt(vec.x, vec.y, vec.z)
+      return place(bhit, Hand.MAIN_HAND)
     })
+
+  private def checkSide(pos: BlockPos, side: Direction): Boolean =
+    val block = mc.world.getBlockState(pos.offset(side))
+    side != Direction.UP && block.isSolidBlock(mc.world, pos)
 
   private def getLandingBlock(upto: Int): BlockPos =
     val start = mc.player.getBlockPos()

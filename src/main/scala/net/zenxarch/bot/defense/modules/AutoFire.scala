@@ -35,7 +35,11 @@ class AutoFire extends BlockModule("AutoFire"):
     var slot = findInInventory(Items.FLINT_AND_STEEL)
     if slot == -1 then return false
     var hit =
-      BlockPlacementUtils.raycastToBlockForPlacement(pos, FluidHandling.ANY)
+      BlockPlacementUtils.raycastToBlockForPlacement(
+        pos,
+        FluidHandling.ANY,
+        _.equals(Direction.DOWN)
+      )
     if hit == null then return false
     pickItemSlot(slot)
     if BlockPlacementUtils.place(hit, Hand.MAIN_HAND) then
