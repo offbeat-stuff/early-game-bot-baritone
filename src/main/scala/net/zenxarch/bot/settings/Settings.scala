@@ -11,32 +11,30 @@ object Settings:
   import SettingsParser._
   private val settingsMap = new HashMap[String, Setting[?]]()
 
+  def registerSetting[T <: Setting[?]](settingName: String, value: T) =
+    val s = filterIdentifier(settingName)
+    if !settingsMap.contains(s) then settingsMap.put(s, value)
+
   def registerSetting(settingName: String, value: Boolean): Unit =
-    val s = parse(settingName)
-    val n = s(0).reduce(_ + "." + _)
-    settingsMap.put(n, new BoolSetting(value))
+    registerSetting(settingName, new BoolSetting(value))
 
   def registerSetting(
       settingName: String,
       value: Double
   ): Unit =
-    val s = parse(settingName)
-    val n = s(0).reduce(_ + "." + _)
-    settingsMap.put(
-      n,
+    registerSetting(
+      settingName,
       new DoubleSetting(value)
     )
 
   def getBoolean(identifier: String): Boolean =
-    var s = parse(identifier)
-    var n = s(0).reduce(_ + "." + _)
+    val n = filterIdentifier(identifier)
     if settingsMap.contains(n) && settingsMap.get(n).get.kind == Kind.Bool
     then return (settingsMap.get(n).get.asInstanceOf[BoolSetting]).value
     return false
 
   def getDouble(identifier: String): Double =
-    val s = parse(identifier)
-    val n = s(0).reduce(_ + "." + _)
+    val n = filterIdentifier(identifier)
     if settingsMap.contains(n) && settingsMap.get(n).get.kind == Kind.Double
     then return (settingsMap.get(n).get.asInstanceOf[DoubleSetting]).value
     return 0
@@ -63,7 +61,7 @@ object Settings:
 
   def suggest(builder: SuggestionsBuilder): CompletableFuture[Suggestions] =
     val s = parse(builder.getRemaining())
-    val n = s(0).reduceLeft(_ + "." + _)
+    val n = s(0).reduce(_ + "." + _)
 
     if settingsMap.contains(n) then
       settingsMap
