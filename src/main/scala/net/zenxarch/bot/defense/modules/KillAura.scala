@@ -37,7 +37,9 @@ class KillAura extends Module("KillAura"):
     performAction(() => internalHandleLiving(le))
 
   private def internalHandleLiving(le: LivingEntity): Boolean =
-    if !lookingAt(le) then lookAt(le)
+    if !lookingAt(le) then
+      lookAt(le)
+      syncRotation()
     val bestWeapon = findBestWeapon(le)
 
     // switch weapon

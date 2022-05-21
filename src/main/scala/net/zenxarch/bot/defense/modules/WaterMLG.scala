@@ -48,6 +48,7 @@ class WaterMLG extends Module("WaterMlg"):
     DefenseStateManager.performAction(() => {
       pickItemSlot(saveItemSlot)
       ClientPlayerHelper.lookAt(vec.x, vec.y, vec.z)
+      ClientPlayerHelper.syncRotation()
       return place(bhit, Hand.MAIN_HAND)
     })
 
