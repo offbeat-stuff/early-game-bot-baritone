@@ -5,7 +5,7 @@
 tasks:
   - init: ./gradlew build
 image:
-  file: docker/.gitpod.Dockerfile
+  file: .gitpod.Dockerfile
 vscode:
   extensions:
     - CoenraadS.bracket-pair-colorizer
