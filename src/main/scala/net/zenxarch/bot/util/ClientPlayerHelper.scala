@@ -90,9 +90,9 @@ object ClientPlayerHelper:
     if test.apply(inv.offHand.get(0)) then return inv.main.size()
     return -1
 
-  def findBestInInventory(pref: (ItemStack) => Float, base: Float = 0): Int =
+  def findBestInInventory(pref: (ItemStack) => Float): Int =
     var bestSlot = -1
-    var best = base
+    var best = pref(ItemStack.EMPTY)
     for i <- 0 until inv.main.size
     do
       val preference = pref(inv.main.get(i))
